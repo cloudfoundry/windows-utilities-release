@@ -1,0 +1,11 @@
+---
+name: set-admin-password
+description: "Sets password for the Administrator user on Windows"
+templates:
+  pre-start.ps1: bin/pre-start.ps1
+
+packages: []
+
+properties:
+  set-admin-password.password:
+    description: "Administrator Password"
