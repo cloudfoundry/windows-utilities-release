@@ -7,5 +7,11 @@ templates:
 packages: []
 
 properties:
+  set-admin-password.username:
+    description: "Username"
+    default: "Administrator"
+  set-admin-password.randomize-password:
+    description: "Randomize password"
+    default: false
   set-admin-password.password:
-    description: "Administrator Password"
+    description: "New password"
