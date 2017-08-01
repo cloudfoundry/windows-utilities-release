@@ -1,4 +1,4 @@
-Start-Sleep 30
+Start-Sleep 5
 
 $ErrorActionPreference = "Stop";
 trap { $host.SetShouldExit(1) }
@@ -39,7 +39,6 @@ function Valid-Password() {
     }
     return ($digits + $special + $alphaLow + $alphaHigh) -ge 3
 }
-
 
 function Get-RandomPassword() {
     $limit = 200
