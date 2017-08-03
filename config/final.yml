@@ -1,1 +1,6 @@
-name: windows-utilities
+---
+final_name: windows-utilities
+blobstore:
+  provider: s3
+  options:
+    bucket_name: windows-utilities-release

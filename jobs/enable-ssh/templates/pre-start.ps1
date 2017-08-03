@@ -1,7 +1,10 @@
 ﻿Start-Sleep 5
 
+$EnableSSHPath="C:\var\vcap\packages\enable-ssh\enable-ssh.exe"
 $SSHDir="C:\Program Files\OpenSSH"
 $InfFilePath="C:\Windows\Temp\enable-ssh.inf"
+$LGPOPath="C:\Windows\LGPO.exe"
+
 $InfFileContents=@'
 [Unicode]
 Unicode=yes
@@ -14,14 +17,24 @@ Revision=1
 SeDenyNetworkLogonRight=*S-1-5-32-546
 SeAssignPrimaryTokenPrivilege=*S-1-5-19,*S-1-5-20,*S-1-5-80-3847866527-469524349-687026318-516638107-1125189541
 '@
-$LGPOPath="C:\Windows\LGPO.exe"
 
 if (-Not (Test-Path $SSHDir)) {
     Write-Error "OpenSSH does not appear to be installed: missing directory: $SSHDir"
     Exit 1
 }
 
-if ((Get-Service sshd).Status -eq 'Running') {
+if (-Not (Test-Path $EnableSSHPath)) {
+    Write-Error "Missing enable-ssh.exe: missing executable: $EnableSSHPath"
+    Exit 1
+}
+
+# Do this to prevent Get-Service from error'ing
+$sshd=(Get-Service | where { $_.Name -eq "sshd" })
+if ($sshd -eq $null) {
+    Write-Error "Error: sshd service is not installed"
+    Exit 1
+}
+if ($sshd.Status -eq "Running") {
     "sshd service is already running, nothing to do here"
     Exit 0
 }
@@ -35,8 +48,12 @@ if ((Get-NetFirewallRule | where { $_.DisplayName -eq 'SSH' }) -eq $null) {
 
 if (Test-Path $LGPOPath) {
     "Found $LGPOPath. Modifying security policies to support ssh."
-    Out-File -FilePath $InfFilePath -InputObject $InfFileContents -Force
+    Out-File -FilePath $InfFilePath -Encoding unicode -InputObject $InfFileContents -Force
     & $LGPOPath /s $InfFilePath
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "LGPO.exe exited with non-zero code: ${LASTEXITCODE}"
+        Exit $LASTEXITCODE
+    }
 } else {
     "Did not find $LGPOPath. Assuming existing security policies are sufficient to support ssh."
 }
@@ -68,5 +85,14 @@ if ((Get-Service sshd).Status -ne 'Running') {
     Write-Error "Failed to start 'sshd' service"
     Exit 1
 }
-
 "Successfully started 'ssh-agent' and 'sshd' services"
+
+"Enabling key based authentication"
+C:\var\vcap\packages\enable-ssh\enable-ssh.exe
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "enable-ssh.exe exited with non-zero code: ${LASTEXITCODE}"
+    Exit $LASTEXITCODE
+}
+
+"Successfully enabled ssh"
+Exit 0

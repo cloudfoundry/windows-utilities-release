@@ -4,6 +4,6 @@ description: "Enables SSH on Windows"
 templates:
   pre-start.ps1: bin/pre-start.ps1
 
-packages: []
+packages: [enable-ssh]
 
 properties: {}

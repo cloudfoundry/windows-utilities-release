@@ -1,0 +1,10 @@
+---
+name: enable-ssh
+
+dependencies:
+  - golang-windows
+
+files:
+  - github.com/greenhouse-org/enable-ssh/*
+  - github.com/greenhouse-org/enable-ssh/**/*
+
