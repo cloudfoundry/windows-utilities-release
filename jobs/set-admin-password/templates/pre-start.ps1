@@ -68,8 +68,8 @@ function Set-Password() {
 }
 
 <%
-    if !p("set-admin-password.randomize-password") && p("set-admin-password.password").nil?
-        throw "either password or randomize-password must be specified"
+    if !p("set-admin-password.randomize-password") && p("set-admin-password.password").to_s.empty?
+        throw "either password must be specified or randomize-password must be true"
     end
     if p("set-admin-password.randomize-password") && !p("set-admin-password.password").empty?
         throw "both password and randomize-password are specified - only one may be specified"

@@ -15,3 +15,4 @@ properties:
     default: false
   set-admin-password.password:
     description: "New password"
+    default: ""
