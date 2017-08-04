@@ -6,4 +6,7 @@ templates:
 
 packages: [enable-ssh]
 
-properties: {}
+properties:
+  enable-ssh.enabled:
+    description: "If false this job will do nothing"
+    default: true

@@ -1,4 +1,7 @@
-﻿Start-Sleep 5
+$Enabled=$<%= p("enable-ssh.enabled").to_s %>
+if (-not $Enabled) { Exit 0 }
+
+Start-Sleep 5
 
 $EnableSSHPath="C:\var\vcap\packages\enable-ssh\enable-ssh.exe"
 $SSHDir="C:\Program Files\OpenSSH"
