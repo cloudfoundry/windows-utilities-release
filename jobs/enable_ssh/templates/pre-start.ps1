@@ -1,9 +1,9 @@
-$Enabled=$<%= p("enable-ssh.enabled").to_s %>
+﻿$Enabled=$<%= p("enable_ssh.enabled").to_s %>
 if (-not $Enabled) { Exit 0 }
 
 Start-Sleep 5
 
-$EnableSSHPath="C:\var\vcap\packages\enable-ssh\enable-ssh.exe"
+$EnableSSHPath="C:\var\vcap\packages\enable_ssh\enable_ssh.exe"
 $SSHDir="C:\Program Files\OpenSSH"
 $InfFilePath="C:\Windows\Temp\enable-ssh.inf"
 $LGPOPath="C:\Windows\LGPO.exe"
@@ -27,7 +27,7 @@ if (-Not (Test-Path $SSHDir)) {
 }
 
 if (-Not (Test-Path $EnableSSHPath)) {
-    Write-Error "Missing enable-ssh.exe: missing executable: $EnableSSHPath"
+    Write-Error "Missing enable_ssh.exe: missing executable: $EnableSSHPath"
     Exit 1
 }
 
@@ -91,9 +91,9 @@ if ((Get-Service sshd).Status -ne 'Running') {
 "Successfully started 'ssh-agent' and 'sshd' services"
 
 "Enabling key based authentication"
-C:\var\vcap\packages\enable-ssh\enable-ssh.exe
+C:\var\vcap\packages\enable_ssh\enable_ssh.exe
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "enable-ssh.exe exited with non-zero code: ${LASTEXITCODE}"
+    Write-Error "enable_ssh.exe exited with non-zero code: ${LASTEXITCODE}"
     Exit $LASTEXITCODE
 }
 

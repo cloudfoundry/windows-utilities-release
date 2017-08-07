@@ -1,12 +1,12 @@
 ---
-name: enable-ssh
+name: enable_ssh
 description: "Enables SSH on Windows"
 templates:
   pre-start.ps1: bin/pre-start.ps1
 
-packages: [enable-ssh]
+packages: [enable_ssh]
 
 properties:
-  enable-ssh.enabled:
+  enable_ssh.enabled:
     description: "If false this job will do nothing"
     default: true

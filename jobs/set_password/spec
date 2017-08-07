@@ -1,5 +1,5 @@
 ---
-name: set-password
+name: set_password
 description: "Sets password for a user on Windows (defaults to Administrator)"
 templates:
   pre-start.ps1: bin/pre-start.ps1
@@ -7,12 +7,12 @@ templates:
 packages: [ps_modules]
 
 properties:
-  set-password.username:
+  set_password.username:
     description: "Username"
     default: "Administrator"
-  set-password.password:
+  set_password.password:
     description: "New password"
     default: ""
-  set-password.enabled:
+  set_password.enabled:
     description: "If false this job will do nothing"
     default: true
