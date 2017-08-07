@@ -1,0 +1,15 @@
+---
+name: randomize-password
+description: "Sets password for the Administrator user on Windows"
+templates:
+  pre-start.ps1: bin/pre-start.ps1
+
+packages: [ps_modules]
+
+properties:
+  randomize-password.username:
+    description: "Username"
+    default: "Administrator"
+  randomize-password.enabled:
+    description: "If false this job will do nothing"
+    default: true

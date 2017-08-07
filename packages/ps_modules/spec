@@ -1,0 +1,7 @@
+---
+name: ps_modules
+
+dependencies:
+
+files:
+  - ps_modules/**

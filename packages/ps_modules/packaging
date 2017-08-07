@@ -1,0 +1,5 @@
+$ErrorActionPreference = "Stop";
+trap { $host.SetShouldExit(1) }
+
+$BOSH_INSTALL_TARGET = Resolve-Path "${env:BOSH_INSTALL_TARGET}"
+Copy-Item "ps_modules/*" "${BOSH_INSTALL_TARGET}"

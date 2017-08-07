@@ -1,11 +1,4 @@
-Start-Sleep 5
-
-$ErrorActionPreference = "Stop";
-trap { $host.SetShouldExit(1) }
-
-$CharList = "!`"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_``abcdefghijklmnopqrstuvwxyz{|}~".ToCharArray()
-
-function Is-Special() {
+﻿function Is-Special() {
     param([parameter(Mandatory=$true)] [string]$c)
 
     return ('!' -le $c -and $c -le '/') -or (':' -le $c -and $c -le '@') -or `
@@ -41,6 +34,7 @@ function Valid-Password() {
 }
 
 function Get-RandomPassword() {
+    $CharList = "!`"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_``abcdefghijklmnopqrstuvwxyz{|}~".ToCharArray()
     $limit = 200
     $count = 0
 
@@ -66,38 +60,3 @@ function Set-Password() {
     $AdsiUser.PasswordExpired = 0
     $AdsiUser.setinfo()
 }
-
-<%
-    if !p("set-admin-password.randomize-password") && p("set-admin-password.password").to_s.empty?
-        throw "either password must be specified or randomize-password must be true"
-    end
-    if p("set-admin-password.randomize-password") && !p("set-admin-password.password").empty?
-        throw "both password and randomize-password are specified - only one may be specified"
-    end
-%>
-
-[string]$NewPassword = ''
-
-<% if_p("set-admin-password.password") do |password| %>
-    "Found: set-admin-password.password"
-    [string]$EncodedPass = "<%= Base64.strict_encode64(password) %>"
-    [string]$NewPassword = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($EncodedPass))
-<% end %>
-
-<% if p("set-admin-password.randomize-password") %>
-    [string]$NewPassword = Get-RandomPassword
-    "Found: set-admin-password.randomize-password"
-<% end %>
-
-if ($NewPassword -eq '') {
-    throw "Error: password set to an empty string - refusing to change password"
-}
-
-[string]$Username = '<%= p("set-admin-password.username") %>'
-
-if ($Username -eq '') {
-    throw "Error: empty user name - refusing to change password"
-}
-
-"Setting password for user: $Username"
-Set-Password -Username $Username -Password $NewPassword
