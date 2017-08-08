@@ -1,0 +1,38 @@
+name: windows-utilities
+version: 0.1.0
+commit_hash: dd786a7
+uncommitted_changes: false
+jobs:
+- name: enable_ssh
+  version: c97f05157691badc32b925132b070f9f2c1310e7
+  fingerprint: c97f05157691badc32b925132b070f9f2c1310e7
+  sha1: 7bf5448537202ff725eca17a64834db3447638f1
+- name: randomize_password
+  version: 14e4241e5dd92d657718885a442263592bec1c4b
+  fingerprint: 14e4241e5dd92d657718885a442263592bec1c4b
+  sha1: 20b51843048b67f02218ab95f5f4ee68b8977fa0
+- name: set_password
+  version: 286305c17d1d905979b08f45f272250d2f531648
+  fingerprint: 286305c17d1d905979b08f45f272250d2f531648
+  sha1: 9e3b327490eb1f5508924bbf00e35be50d63466a
+packages:
+- name: enable_ssh
+  version: 33901d6ee7019c4e9f9b1b589af983413878bd2d
+  fingerprint: 33901d6ee7019c4e9f9b1b589af983413878bd2d
+  sha1: 06a03200618372510de105a1c7fada0e6de14ebd
+  dependencies:
+  - golang_windows
+- name: golang_windows
+  version: 2565c3961dd24861f877097ee2e1caf30995a95c
+  fingerprint: 2565c3961dd24861f877097ee2e1caf30995a95c
+  sha1: f701042c8d5ce349e04bfb225e58170ac33ffc53
+  dependencies: []
+- name: ps_modules
+  version: dc18042a65d88fec3e625f68183e4ed557486ee7
+  fingerprint: dc18042a65d88fec3e625f68183e4ed557486ee7
+  sha1: dcd09e4c9d29566b183a5440c35c8dadfc0384ce
+  dependencies: []
+license:
+  version: 87d145fce82453899f1423419521938ef7a25e2e
+  fingerprint: 87d145fce82453899f1423419521938ef7a25e2e
+  sha1: eeb58e741e8495809bfaec90f03a288c29d84014
