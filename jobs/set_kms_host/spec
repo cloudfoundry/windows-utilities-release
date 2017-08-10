@@ -2,7 +2,7 @@
 name: set_kms_host
 description: "Enables KMS activation on Windows"
 templates:
-  pre-start.ps1: bin/pre-start.ps1
+  pre-start.ps1.erb: bin/pre-start.ps1
 
 packages: []
 
@@ -12,6 +12,7 @@ properties:
     default: true
   set_kms_host.host:
     description: "Host of KMS server"
+    default: ""
   set_kms_host.port:
     description: "Port of KMS server"
     default: 1688

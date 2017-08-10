@@ -1,0 +1,31 @@
+﻿$ErrorActionPreference = "Stop"
+
+$KmsEnabled="<%= p("set_kms_host.enabled").to_s %>"
+$DesiredHost="<%= p("set_kms_host.host").to_s %>"
+$DesiredPort="<%= p("set_kms_host.port").to_s %>"
+
+If ($KmsEnabled.ToLower() -Eq "false") {
+  "set_kms_host.enabled = false, nothing to do."
+  Exit 0
+}
+
+$InboundRule="Open inbound $DesiredPort for KMS Server"
+if ((Get-NetFirewallRule | where { $_.DisplayName -eq $InboundRule }) -eq $null) {
+    "Creating inbound firewall rule for KMS"
+    netsh advfirewall firewall add rule name=$InboundRule dir=in action=allow protocol=TCP localport=$DesiredPort
+} else {
+    "Inbound firewall rule for KMS already exists"
+}
+
+$OutboundRule="Open outbound $DesiredPort for KMS Server"
+if ((Get-NetFirewallRule | where { $_.DisplayName -eq $OutboundRule }) -eq $null) {
+    "Creating outbound firewall rule for KMS"
+    netsh advfirewall firewall add rule name=$OutboundRule dir=out action=allow protocol=TCP localport=$DesiredPort
+} else {
+    "Outbound firewall rule for KMS already exists"
+}
+
+
+$arg="{0}:{1}" -f $DesiredHost,$DesiredPort
+"Running slmgr for $arg"
+cscript //B 'C:\\Windows\\System32\\slmgr.vbs' /skms $arg
