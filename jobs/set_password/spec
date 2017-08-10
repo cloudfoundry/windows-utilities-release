@@ -4,7 +4,7 @@ description: "Sets password for a user on Windows (defaults to Administrator)"
 templates:
   pre-start.ps1: bin/pre-start.ps1
 
-packages: [ps_modules]
+packages: []
 
 properties:
   set_password.username:
