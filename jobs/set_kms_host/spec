@@ -1,0 +1,17 @@
+---
+name: set_kms_host
+description: "Enables KMS activation on Windows"
+templates:
+  pre-start.ps1: bin/pre-start.ps1
+
+packages: []
+
+properties:
+  set_kms_host.enabled:
+    description: "If false this job will do nothing"
+    default: true
+  set_kms_host.host:
+    description: "Host of KMS server"
+  set_kms_host.port:
+    description: "Port of KMS server"
+    default: 1688
