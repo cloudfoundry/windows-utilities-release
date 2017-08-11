@@ -17,7 +17,7 @@ releases:
 ```yaml
 addons:
 ...
-- name: set-password
+- name: set_password
   jobs:
   - name: set_password
     release: windows-utilities
@@ -33,7 +33,7 @@ addons:
 #### Randomizing each VM's password
 ```yaml
 addons:
-- name: randomize-password
+- name: randomize_password
   jobs:
   - name: randomize_password
     release: windows-utilities
@@ -56,3 +56,5 @@ addons:
     stemcell:
     - os: windows2012R2
 ```
+
+Note that all of these jobs can be disabled by adding `enabled: false` to their properties.
