@@ -5,7 +5,7 @@ $DesiredHost="<%= p("set_kms_host.host").to_s %>"
 $DesiredPort="<%= p("set_kms_host.port").to_s %>"
 
 If ($KmsEnabled.ToLower() -Eq "false") {
-  "set_kms_host.enabled = false, nothing to do."
+  "set_kms_host.enabled equals false, nothing to do."
   Exit 0
 }
 
@@ -25,7 +25,6 @@ if ((Get-NetFirewallRule | where { $_.DisplayName -eq $OutboundRule }) -eq $null
     "Outbound firewall rule for KMS already exists"
 }
 
-
 $arg="{0}:{1}" -f $DesiredHost,$DesiredPort
-"Running slmgr for $arg"
+"Running: slmgr.vbs /skms $arg"
 cscript //B 'C:\\Windows\\System32\\slmgr.vbs' /skms $arg
