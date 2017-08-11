@@ -4,7 +4,7 @@ description: "Sets password for the Administrator user on Windows"
 templates:
   pre-start.ps1: bin/pre-start.ps1
 
-packages: [ps_modules]
+packages: []
 
 properties:
   randomize_password.username:
