@@ -2,7 +2,9 @@
 name: enable_ssh
 description: "Enables SSH on Windows"
 templates:
+  disable-ssh.ps1: bin/disable-ssh.ps1
   pre-start.ps1: bin/pre-start.ps1
+  drain.ps1: bin/drain.ps1
 
 packages: [enable_ssh]
 

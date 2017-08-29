@@ -1,7 +1,23 @@
-﻿$Enabled=$<%= p("enable_ssh.enabled").to_s %>
-if (-not $Enabled) { Exit 0 }
+$Enabled=[bool]$<%= p("enable_ssh.enabled") %>
 
 Start-Sleep 5
+
+if (-not $Enabled) {
+    $dir = Split-Path $MyInvocation.MyCommand.Path
+    $imp = "$dir\disable-ssh.ps1"
+    if (-Not (Test-Path $imp)) {
+        Write-Error "missing file: $imp"
+        Exit 1
+    }
+    try {
+        Import-Module $imp
+        Disable-SSH
+    } catch {
+        Write-Error $_.Exception.Message
+        Exit 1
+    }
+    Exit 0
+}
 
 $EnableSSHPath="C:\var\vcap\packages\enable_ssh\enable_ssh.exe"
 $SSHDir="C:\Program Files\OpenSSH"
