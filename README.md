@@ -1,6 +1,6 @@
-## Windows Utility Release
+## Windows Utilities Release
 
-The Windows Utility Release provides [BOSH Addons](http://bosh.io/docs/runtime-config.html#addons) that allows operators to: enable [BOSH SSH](https://bosh.io/docs/cli-v2.html#errand-mgmt) and set or randomize the Windows password.
+The Windows Utilities Release provides BOSH jobs intended to be used as [addons](http://bosh.io/docs/runtime-config.html#addons), that help operators configure the operating system.
 
 ### Example Runtime Configurations
 
