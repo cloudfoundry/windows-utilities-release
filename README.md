@@ -17,7 +17,7 @@ releases:
 ```yaml
 addons:
 ...
-- name: set_password
+- name: <some-name>
   jobs:
   - name: set_password
     release: windows-utilities
@@ -33,7 +33,7 @@ addons:
 #### Randomizing each VM's password
 ```yaml
 addons:
-- name: randomize_password
+- name: <some-name>
   jobs:
   - name: randomize_password
     release: windows-utilities
@@ -48,10 +48,26 @@ addons:
 #### Enabling experimental BOSH SSH support on Windows
 ```yaml
 addons:
-- name: enable_ssh
+- name: <some-name>
   jobs:
   - name: enable_ssh
     release: windows-utilities
+  include:
+    stemcell:
+    - os: windows2012R2
+```
+
+#### Configuring a KMS host for your volume-licensed Windows VM to register and activate with
+```yaml
+addons:
+- name: <some-name>
+  jobs:
+  - name: set_kms_host
+    release: windows-utilities
+    properties:
+      set_kms_host:
+        host: some-kms-host.privatedomainname
+        port: 12345 # defaults to 1688
   include:
     stemcell:
     - os: windows2012R2
