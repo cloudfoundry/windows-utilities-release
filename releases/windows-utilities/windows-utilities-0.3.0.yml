@@ -1,0 +1,37 @@
+name: windows-utilities
+version: 0.3.0
+commit_hash: f9b2247
+uncommitted_changes: false
+jobs:
+- name: enable_ssh
+  version: 669c0b887eadb1056fbeb80ce7337f464759de43
+  fingerprint: 669c0b887eadb1056fbeb80ce7337f464759de43
+  sha1: dea397c0e9d8b59b492ca9fc828f75cca08e34b7
+- name: randomize_password
+  version: b286b921486b3d22cf87d53b5d5bb55593ecbb58
+  fingerprint: b286b921486b3d22cf87d53b5d5bb55593ecbb58
+  sha1: 7a0198255a0d2b2c97103101a21bf3667164ed5c
+- name: set_kms_host
+  version: b74e93b0ae71c8448837caff3f1a6fd54b18296a
+  fingerprint: b74e93b0ae71c8448837caff3f1a6fd54b18296a
+  sha1: b6395059f09e2d69377b1f9fdc174a91e62ff561
+- name: set_password
+  version: eb74f22c6237e209c3bbe9df64f441132cedb467
+  fingerprint: eb74f22c6237e209c3bbe9df64f441132cedb467
+  sha1: 5b0fd623316f03d8e2ceacd6aff765d3b07b4829
+packages:
+- name: enable_ssh
+  version: 33901d6ee7019c4e9f9b1b589af983413878bd2d
+  fingerprint: 33901d6ee7019c4e9f9b1b589af983413878bd2d
+  sha1: 06a03200618372510de105a1c7fada0e6de14ebd
+  dependencies:
+  - golang_windows
+- name: golang_windows
+  version: 2565c3961dd24861f877097ee2e1caf30995a95c
+  fingerprint: 2565c3961dd24861f877097ee2e1caf30995a95c
+  sha1: f701042c8d5ce349e04bfb225e58170ac33ffc53
+  dependencies: []
+license:
+  version: 87d145fce82453899f1423419521938ef7a25e2e
+  fingerprint: 87d145fce82453899f1423419521938ef7a25e2e
+  sha1: eeb58e741e8495809bfaec90f03a288c29d84014
