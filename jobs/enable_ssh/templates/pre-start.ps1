@@ -1,4 +1,4 @@
-$Enabled=[bool]$<%= p("enable_ssh.enabled") %>
+﻿$Enabled=[bool]$<%= p("enable_ssh.enabled") %>
 
 Start-Sleep 5
 
@@ -19,7 +19,6 @@ if (-not $Enabled) {
     Exit 0
 }
 
-$EnableSSHPath="C:\var\vcap\packages\enable_ssh\enable_ssh.exe"
 $SSHDir="C:\Program Files\OpenSSH"
 $InfFilePath="C:\Windows\Temp\enable-ssh.inf"
 $LGPOPath="C:\Windows\LGPO.exe"
@@ -39,11 +38,6 @@ SeAssignPrimaryTokenPrivilege=*S-1-5-19,*S-1-5-20,*S-1-5-80-3847866527-469524349
 
 if (-Not (Test-Path $SSHDir)) {
     Write-Error "OpenSSH does not appear to be installed: missing directory: $SSHDir"
-    Exit 1
-}
-
-if (-Not (Test-Path $EnableSSHPath)) {
-    Write-Error "Missing enable_ssh.exe: missing executable: $EnableSSHPath"
     Exit 1
 }
 
@@ -105,13 +99,6 @@ if ((Get-Service sshd).Status -ne 'Running') {
     Exit 1
 }
 "Successfully started 'ssh-agent' and 'sshd' services"
-
-"Enabling key based authentication"
-C:\var\vcap\packages\enable_ssh\enable_ssh.exe
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "enable_ssh.exe exited with non-zero code: ${LASTEXITCODE}"
-    Exit $LASTEXITCODE
-}
 
 "Successfully enabled ssh"
 Exit 0

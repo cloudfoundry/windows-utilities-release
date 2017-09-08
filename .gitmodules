@@ -1,3 +1,0 @@
-[submodule "src/github.com/greenhouse-org/enable-ssh"]
-	path = src/github.com/greenhouse-org/enable-ssh
-	url = https://github.com/greenhouse-org/enable-ssh.git
