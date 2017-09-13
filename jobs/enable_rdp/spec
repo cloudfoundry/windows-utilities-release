@@ -1,0 +1,14 @@
+---
+name: enable_rdp
+description: "Enables RDP on Windows"
+templates:
+  pre-start.ps1: bin/pre-start.ps1
+  drain.ps1: bin/drain.ps1
+  disable-rdp.ps1: bin/disable-rdp.ps1
+
+packages: []
+
+properties:
+  enable_rdp.enabled:
+    description: "If enabled, this job enabled RDP"
+    default: false

@@ -1,4 +1,4 @@
-Start-Sleep 5
+﻿Start-Sleep 5
 
 $dir = Split-Path $MyInvocation.MyCommand.Path
 $imp = "$dir\disable-ssh.ps1"
