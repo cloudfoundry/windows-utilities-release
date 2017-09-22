@@ -11,4 +11,4 @@ packages: []
 properties:
   enable_rdp.enabled:
     description: "If enabled, this job enabled RDP"
-    default: false
+    default: true
