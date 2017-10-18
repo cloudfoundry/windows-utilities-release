@@ -42,6 +42,7 @@ Revision=1
 [System Access]
 [Privilege Rights]
 SeDenyNetworkLogonRight=*S-1-5-32-546
+SeDenyRemoteInteractiveLogonRight=*S-1-5-32-546
 '@
 
 if (Test-Path $LGPOPath) {
