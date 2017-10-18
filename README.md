@@ -73,4 +73,19 @@ addons:
     - os: windows2012R2
 ```
 
+#### Enabling RDP access for Administrators on your Windows Cell
+```yaml
+addons:
+- name: <some-name>
+  jobs:
+  - name: enable_rdp
+    properties:
+      enable_rdp:
+        enabled: true
+    release: windows-utilities
+  include:
+    stemcell:
+    - os: windows2012R2
+```
+
 Note that all of these jobs can be disabled by adding `enabled: false` to their properties.
