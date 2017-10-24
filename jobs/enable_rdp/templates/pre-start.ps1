@@ -1,7 +1,6 @@
 ﻿Start-Sleep 5
 
 $ErrorActionPreference = "Stop";
-$ErrorActionPreference = "Stop";
 trap {
     $formatstring = "{0} : {1}`n{2}`n" +
                     "    + CategoryInfo          : {3}`n"
@@ -18,11 +17,12 @@ trap {
 
 $Enabled=[bool]$<%= p("enable_rdp.enabled") %>
 
-# Disable RDP
+#Import
+$dir = Split-Path $MyInvocation.MyCommand.Path
+Import-Module "$dir\disable-rdp.ps1"
 
+# Disable RDP
 if (-not $Enabled) {
-    $dir = Split-Path $MyInvocation.MyCommand.Path
-    Import-Module "$dir\disable-rdp.ps1"
     Disable-RDP
     Exit 0
 }
@@ -66,5 +66,9 @@ if ($rdp.StartType -eq 'Disabled') {
 if (( $rdp.Status -ne 'Running' -or $rdp.Status -ne 'StartPending' )) {
     $rdp | Start-Service
 }
+
+Enable-FileSharing
+
+"Rdp enabled"
 
 Exit 0
