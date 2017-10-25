@@ -20,7 +20,7 @@ if ((Get-NetFirewallRule | where { $_.DisplayName -eq $InboundRule }) -eq $null)
 $OutboundRule="Open outbound $DesiredPort for KMS Server"
 if ((Get-NetFirewallRule | where { $_.DisplayName -eq $OutboundRule }) -eq $null) {
     "Creating outbound firewall rule for KMS"
-    netsh advfirewall firewall add rule name=$OutboundRule dir=out action=allow protocol=TCP localport=$DesiredPort
+    netsh advfirewall firewall add rule name=$OutboundRule dir=out action=allow protocol=TCP remoteport=$DesiredPort
 } else {
     "Outbound firewall rule for KMS already exists"
 }
