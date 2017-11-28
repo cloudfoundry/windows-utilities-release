@@ -79,9 +79,6 @@ addons:
 - name: <some-name>
   jobs:
   - name: enable_rdp
-    properties:
-      enable_rdp:
-        enabled: true
     release: windows-utilities
   include:
     stemcell:
