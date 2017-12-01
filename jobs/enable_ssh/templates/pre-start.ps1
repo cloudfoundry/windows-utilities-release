@@ -71,17 +71,6 @@ if (Test-Path $LGPOPath) {
     "Did not find $LGPOPath. Assuming existing security policies are sufficient to support ssh."
 }
 
-Push-Location $SSHDir
-    "Removing any existing host keys"
-    Remove-Item -Path ".\ssh_host_*"
-
-    "Generating new host keys"
-    .\ssh-keygen -A
-
-    "Fixing host key permissions"
-    .\FixHostFilePermissions.ps1 -Confirm:$false
-Pop-Location
-
 "Setting 'ssh-agent' service start type to automatic"
 Set-Service -Name ssh-agent -StartupType Automatic
 
@@ -91,6 +80,33 @@ Set-Service -Name sshd -StartupType Automatic
 "Starting 'ssh-agent' service"
 Start-Service -Name ssh-agent
 
+
+"Successfully started 'ssh-agent' and 'sshd' services"
+Push-Location $SSHDir
+    "Removing any existing host keys"
+    Remove-Item -Path ".\ssh_host_*"
+
+    "Generating new host keys"
+    .\ssh-keygen -A
+
+    "Fixing host key permissions"
+    .\FixHostFilePermissions.ps1 -Confirm:$false
+
+    "Adding ssh keys to ssh-agent"
+    .\ssh-add ssh_host_dsa_key
+    .\ssh-add ssh_host_rsa_key
+    .\ssh-add ssh_host_ecdsa_key
+    .\ssh-add ssh_host_ed25519_key
+    "listing ssh keys"
+    .\ssh-add -L
+
+    "Removing private SSH keys"
+    Remove-Item ssh_host_dsa_key
+    Remove-Item ssh_host_rsa_key
+    Remove-Item ssh_host_ecdsa_key
+    Remove-Item ssh_host_ed25519_key
+Pop-Location
+
 "Starting 'sshd' service"
 Start-Service -Name sshd
 
@@ -98,7 +114,6 @@ if ((Get-Service sshd).Status -ne 'Running') {
     Write-Error "Failed to start 'sshd' service"
     Exit 1
 }
-"Successfully started 'ssh-agent' and 'sshd' services"
 
 "Successfully enabled ssh"
 Exit 0
