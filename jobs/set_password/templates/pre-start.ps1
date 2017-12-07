@@ -18,6 +18,16 @@ function Set-Password() {
     $AdsiUser.setinfo()
 }
 
+function Test-User() {
+    param(
+        [parameter(Mandatory=$true)]
+        [string]$Username
+    )
+
+    $User = Get-WMiObject -class Win32_UserAccount | Where {$_.Name -eq $Username}
+    return $User -ne $null
+}
+
 [string]$Username = '<%= p("set_password.username") %>'
 [string]$EncodedPass = '<%= Base64.strict_encode64(p("set_password.password")) %>'
 [string]$NewPassword = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($EncodedPass))
@@ -25,8 +35,14 @@ if ($Username -eq '') {
     throw "Error: empty user name - refusing to change password"
 }
 
-"Setting password for user: $Username"
-Set-Password -Username $Username -Password $NewPassword
+if (($Username -eq 'Administrator') -and !(Test-User -Username $Username)) {
+    "Adding new user: $Username"
+    net user $Username $NewPassword /add
+    net localgroup Administrators $Username /add
+} else {
+    "Setting password for user: $Username"
+    Set-Password -Username $Username -Password $NewPassword
+}
 
 <% end %>
 
