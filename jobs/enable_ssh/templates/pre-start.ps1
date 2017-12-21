@@ -11,7 +11,7 @@ if (-not $Enabled) {
     }
     try {
         Import-Module $imp
-        Disable-SSH
+        .\Disable-SSH
     } catch {
         Write-Error $_.Exception.Message
         Exit 1

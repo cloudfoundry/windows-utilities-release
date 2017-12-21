@@ -8,7 +8,7 @@ if (-Not (Test-Path $imp)) {
 }
 try {
     Import-Module $imp
-    Disable-SSH > $null
+    .\Disable-SSH > $null
 } catch {
     Write-Error $_.Exception.Message
     Exit 1

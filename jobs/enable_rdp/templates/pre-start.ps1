@@ -23,7 +23,7 @@ Import-Module "$dir\disable-rdp.ps1"
 
 # Disable RDP
 if (-not $Enabled) {
-    Disable-RDP
+    .\Disable-RDP
     Exit 0
 }
 
