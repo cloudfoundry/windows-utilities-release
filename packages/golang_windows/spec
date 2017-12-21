@@ -1,7 +1,0 @@
----
-name: golang_windows
-
-dependencies: []
-
-files:
-- golang/go*.windows-amd64.zip
