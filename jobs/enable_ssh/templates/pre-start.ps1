@@ -10,8 +10,8 @@ if (-not $Enabled) {
         Exit 1
     }
     try {
-        Import-Module $imp
-        .\Disable-SSH
+        . $imp
+        Disable-SSH
     } catch {
         Write-Error $_.Exception.Message
         Exit 1

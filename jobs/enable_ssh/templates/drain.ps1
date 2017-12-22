@@ -1,18 +1,27 @@
 ﻿Start-Sleep 5
 
+$OutLog = "C:\var\vcap\sys\log\enable_ssh\drain.stdout.log"
+$ErrLog = "C:\var\vcap\sys\log\enable_ssh\drain.stderr.log"
+
+$ErrorActionPreference = "Stop";
+trap {
+    $formatstring = "{0} : {1}`n{2}`n" +
+                    "    + CategoryInfo          : {3}`n"
+                    "    + FullyQualifiedErrorId : {4}`n"
+    $fields = $_.InvocationInfo.MyCommand.Name,
+              $_.ErrorDetails.Message,
+              $_.InvocationInfo.PositionMessage,
+              $_.CategoryInfo.ToString(),
+              $_.FullyQualifiedErrorId
+
+    $formatstring -f $fields | Out-File -FilePath $ErrLog -Encoding ascii
+    Exit 1
+}
+
 $dir = Split-Path $MyInvocation.MyCommand.Path
-$imp = "$dir\disable-ssh.ps1"
-if (-Not (Test-Path $imp)) {
-    Write-Error "missing file: $imp"
-    Exit 1
-}
-try {
-    Import-Module $imp
-    .\Disable-SSH > $null
-} catch {
-    Write-Error $_.Exception.Message
-    Exit 1
-}
+. "$dir\disable-ssh.ps1"
+
+Disable-SSH | Out-File -FilePath $OutLog -Encoding ascii
 
 "0"
 Exit 0

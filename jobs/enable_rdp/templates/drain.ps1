@@ -19,9 +19,9 @@ trap {
 }
 
 $dir = Split-Path $MyInvocation.MyCommand.Path
-Import-Module "$dir\disable-rdp.ps1"
+. "$dir\disable-rdp.ps1"
 
-.\Disable-RDP | Out-File -FilePath $OutLog -Encoding ascii
+Disable-RDP | Out-File -FilePath $OutLog -Encoding ascii
 
 "0"
 Exit 0
