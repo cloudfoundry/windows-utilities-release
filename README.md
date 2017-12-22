@@ -2,6 +2,8 @@
 
 The Windows Utilities Release provides BOSH jobs intended to be used as [addons](http://bosh.io/docs/runtime-config.html#addons), that help operators configure the operating system.
 
+See [os-conf-release(https://github.com/cloudfoundry/os-conf-release) for Linux OS Configuration.
+
 ### Example Runtime Configurations
 
 Include the release in your runtime-config.yml:
