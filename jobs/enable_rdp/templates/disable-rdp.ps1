@@ -46,7 +46,8 @@ DWORD:$IsDisabled
 function Disable-RDP {
     "Preparing to disable RDP"
     $rdp = Get-Service "TermService"
-    if ($rdp.StartType -ne 'Disabled') {
+    $startMode = (Get-WmiObject -Class Win32_Service -Property StartMode -Filter "Name='TermService'").StartMode
+    if ($startMode -ne 'Disabled') {
         "Disabling TermService"
         $rdp | Set-Service -StartupType Disabled
     }

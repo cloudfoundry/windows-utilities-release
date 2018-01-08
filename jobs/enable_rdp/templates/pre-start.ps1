@@ -58,10 +58,12 @@ if (Test-Path $LGPOPath) {
 }
 
 $rdp=(Get-Service TermService)
+$startMode = (Get-WmiObject -Class Win32_Service -Property StartMode -Filter "Name='TermService'").StartMode
+
 Get-NetFirewallRule -DisplayName "Remote Desktop*" | Set-NetFirewallRule -enabled true
 Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
 
-if ($rdp.StartType -eq 'Disabled') {
+if ($startMode -eq 'Disabled') {
     $rdp | Set-Service -StartupType Automatic
 }
 if (( $rdp.Status -ne 'Running' -or $rdp.Status -ne 'StartPending' )) {
