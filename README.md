@@ -32,6 +32,8 @@ addons:
     - os: windows2012R2
 ```
 
+**Note:** The `set_password` job should not be used in conjunction with the `randomize_password` job.
+
 #### Randomizing each VM's password
 ```yaml
 addons:
