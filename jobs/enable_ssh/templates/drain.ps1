@@ -21,6 +21,11 @@ trap {
 $dir = Split-Path $MyInvocation.MyCommand.Path
 . "$dir\disable-ssh.ps1"
 
+$sshd=(Get-Service | where { $_.Name -eq 'sshd' })
+if ($sshd -eq $null) {
+   Exit 0
+}
+
 Disable-SSH | Out-File -FilePath $OutLog -Encoding ascii
 
 "0"
