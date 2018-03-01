@@ -19,9 +19,7 @@ trap {
 }
 
 $dir = Split-Path $MyInvocation.MyCommand.Path
-echo "Before sourcing $dir\disable-ssh.ps1" | Out-File -FilePath $OutLog -Encoding ascii
 . "$dir\disable-ssh.ps1"
-echo "After sourcing" | Out-File -FilePath $OutLog -Encoding ascii
 
 $sshd=(Get-Service | where { $_.Name -eq 'sshd' })
 if ($sshd -eq $null) {
@@ -29,11 +27,9 @@ if ($sshd -eq $null) {
    "0"
    Exit 0
 }
-echo "Found ssh service" | Out-File -FilePath $OutLog -Encoding ascii
 
+echo "Disabling ssh" | Out-File -FilePath $OutLog -Encoding ascii
 Disable-SSH | Out-File -FilePath $OutLog -Encoding ascii
-
-echo "Disabled ssh, exiting 0" | Out-File -FilePath $OutLog -Encoding ascii
 
 "0"
 Exit 0
