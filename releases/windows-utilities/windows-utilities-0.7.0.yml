@@ -1,0 +1,29 @@
+name: windows-utilities
+version: 0.7.0
+commit_hash: "3442577"
+uncommitted_changes: false
+jobs:
+- name: enable_rdp
+  version: 60a0e82b161fe55dd5775c9e9b473d9f91bc2e33dd47f9e220955cf28d41d103
+  fingerprint: 60a0e82b161fe55dd5775c9e9b473d9f91bc2e33dd47f9e220955cf28d41d103
+  sha1: sha256:7a27ff93b4f7f0707bb6fa6a62bdc8214f1e9ad6a69fc4d81aca8d2125a535f9
+- name: enable_ssh
+  version: 8325f33df10130f7acc42c83f3e8a68c7e8057ff774dd661a477c153bce026c6
+  fingerprint: 8325f33df10130f7acc42c83f3e8a68c7e8057ff774dd661a477c153bce026c6
+  sha1: sha256:811293a7520df8894b093614fb95a798d9ffeb698e01da401e4081269de7a71e
+- name: randomize_password
+  version: fec468d50da39463a8561a576cdbbb06a33e3d14dcb240c13a618da1f72d85a5
+  fingerprint: fec468d50da39463a8561a576cdbbb06a33e3d14dcb240c13a618da1f72d85a5
+  sha1: sha256:8aebada7f765e54cc4ff65151ddeffa17fcf3cb74103031d0cbcc2ac5d28548c
+- name: set_kms_host
+  version: 1714edc5cd4393a2eeef9bac6f8e55c49e54b4fb23f72876131568a3102ecfc3
+  fingerprint: 1714edc5cd4393a2eeef9bac6f8e55c49e54b4fb23f72876131568a3102ecfc3
+  sha1: sha256:15dcdfe4f65c4b26a860a7fc2b99a96c554244c952b479f788ad4ec38a853603
+- name: set_password
+  version: ea5e420310a7f715dcadde29951f0d2341b7c0b81c8c2cf2f9c67f71d6468862
+  fingerprint: ea5e420310a7f715dcadde29951f0d2341b7c0b81c8c2cf2f9c67f71d6468862
+  sha1: sha256:1262924ad8e97069c67bbaefdba67d929f40b6a8c4877d07cfaf5a8062431703
+license:
+  version: d4cf0e579318e6efe5c3b6e99f8f3d774a101106794e5898f1d666f7a3225e55
+  fingerprint: d4cf0e579318e6efe5c3b6e99f8f3d774a101106794e5898f1d666f7a3225e55
+  sha1: sha256:e52d0adb58e349ad3eff98a0f3c8829d7d7fc971abaeef469787b4f1d1c5d839
