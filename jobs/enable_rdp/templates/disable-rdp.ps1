@@ -28,12 +28,12 @@ DWORD:$IsDisabled
         "Found $LGPOPath. Modifying security policies to modify support for rdp filesharing."
         Out-File -FilePath $TxtFilePath -Encoding unicode -InputObject $TxtFileContents -Force
 
-        & $LGPOPath /r $TxtFilePath /w $PolFilePath
+        & $LGPOPath /r $TxtFilePath /w $PolFilePath /q
         if ($LASTEXITCODE -ne 0) {
             Write-Error "LGPO.exe exited with non-zero code: ${LASTEXITCODE}"
             Exit $LASTEXITCODE
         }
-        & $LGPOPath /m $PolFilePath
+        & $LGPOPath /m $PolFilePath /q
         if ($LASTEXITCODE -ne 0) {
             Write-Error "LGPO.exe exited with non-zero code: ${LASTEXITCODE}"
             Exit $LASTEXITCODE
