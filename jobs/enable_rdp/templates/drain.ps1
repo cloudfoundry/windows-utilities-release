@@ -1,4 +1,4 @@
-﻿Start-Sleep 20
+﻿Start-Sleep 5
 
 $OutLog = "C:\var\vcap\sys\log\enable_rdp\drain.stdout.log"
 $ErrLog = "C:\var\vcap\sys\log\enable_rdp\drain.stderr.log"
