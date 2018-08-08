@@ -1,6 +1,8 @@
 ﻿$ErrorActionPreference = "Stop";
 trap { $host.SetShouldExit(1) }
 
+<% require "base64" %>
+
 Start-Sleep 5 # Always sleep
 
 <% if p('set_password.enabled') %>
