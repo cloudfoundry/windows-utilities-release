@@ -83,8 +83,10 @@ Start-Service -Name ssh-agent
 
 "Successfully started 'ssh-agent' and 'sshd' services"
 Push-Location $SSHDir
+    New-Item -ItemType Directory -Path "$env:ProgramData\ssh"
+
     "Removing any existing host keys"
-    Remove-Item -Path ".\ssh_host_*"
+    Remove-Item -Path "$env:ProgramData\ssh\ssh_host_*"
 
     "Generating new host keys"
     .\ssh-keygen -A
@@ -93,18 +95,16 @@ Push-Location $SSHDir
     .\FixHostFilePermissions.ps1 -Confirm:$false
 
     "Adding ssh keys to ssh-agent"
-    .\ssh-add ssh_host_dsa_key
-    .\ssh-add ssh_host_rsa_key
-    .\ssh-add ssh_host_ecdsa_key
-    .\ssh-add ssh_host_ed25519_key
+    Get-ChildItem $env:ProgramData\ssh\ssh_host_*_key | % {
+        "Adding $_.Name to ssh-agent"
+        .\ssh-add $_.FullName
+
+        "Removing $_.Name from folder"
+        Remove-Item $_.FullName
+    }
+
     "listing ssh keys"
     .\ssh-add -L
-
-    "Removing private SSH keys"
-    Remove-Item ssh_host_dsa_key
-    Remove-Item ssh_host_rsa_key
-    Remove-Item ssh_host_ecdsa_key
-    Remove-Item ssh_host_ed25519_key
 Pop-Location
 
 "Starting 'sshd' service"
