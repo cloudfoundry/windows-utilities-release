@@ -83,7 +83,7 @@ Start-Service -Name ssh-agent
 
 "Successfully started 'ssh-agent' and 'sshd' services"
 Push-Location $SSHDir
-    New-Item -ItemType Directory -Path "$env:ProgramData\ssh"
+    New-Item -ItemType Directory -Path "$env:ProgramData\ssh" -ErrorAction Ignore
 
     "Removing any existing host keys"
     Remove-Item -Path "$env:ProgramData\ssh\ssh_host_*"
