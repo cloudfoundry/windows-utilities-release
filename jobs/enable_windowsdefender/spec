@@ -3,6 +3,7 @@ name: enable_windowsdefender
 description: "Enables Windows Defender on Windows"
 templates:
   pre-start.ps1: bin/pre-start.ps1
+  drain.ps1: bin/drain.ps1
   modules/WindowsDefenderManager.psd1: modules/WindowsDefenderManager.psd1
   modules/WindowsDefenderManager.psm1: modules/WindowsDefenderManager.psm1
 
