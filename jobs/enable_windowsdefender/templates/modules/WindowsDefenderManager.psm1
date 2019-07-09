@@ -11,13 +11,13 @@ $FeaturesToEnable = @(
 )
 
 $FeaturesToDisable = $FeaturesToEnable + @(
-        "DisableCatchupFullScan",
-        "DisableCatchupQuickScan",
-        "DisableEmailScanning",
-        "DisableRemovableDriveScanning",
-        "DisableRestorePoint",
-        "DisableScanningMappedNetworkDrivesForFullScan"
-    )
+    "DisableCatchupFullScan",
+    "DisableCatchupQuickScan",
+    "DisableEmailScanning",
+    "DisableRemovableDriveScanning",
+    "DisableRestorePoint",
+    "DisableScanningMappedNetworkDrivesForFullScan"
+)
 
 function Enable-WindowsDefenderFeatures {
     foreach ($feature in $FeaturesToEnable) {
