@@ -20,8 +20,12 @@ $FeaturesToDisable = $FeaturesToEnable + @(
 )
 
 function Enable-WindowsDefenderFeatures {
-    foreach ($feature in $FeaturesToEnable) {
-        iex "Set-MpPreference -$feature `$False"
+    if (Get-Command -Name Set-MpPreference) {
+        foreach ($feature in $FeaturesToEnable) {
+            iex "Set-MpPreference -$feature `$False"
+        }
+    } else {
+        throw "Windows Defender is not installed on the current stemcell, the enable_windowsdefender job can only be deployed using stemcells with Defender installed"
     }
 }
 

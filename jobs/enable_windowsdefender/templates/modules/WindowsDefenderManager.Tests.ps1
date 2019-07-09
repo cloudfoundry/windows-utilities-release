@@ -53,6 +53,18 @@ Describe "Enable-WindowsDefenderFeatures" {
             }
         }
     }
+
+    It "throws when Set-MpPreference command doesn't exist" {
+        Mock Get-Command { $false } -ModuleName WindowsDefenderManager
+
+        $failureMessage = "Windows Defender is not installed on the current stemcell, the enable_windowsdefender job can only be deployed using stemcells with Defender installed"
+
+        { Enable-WindowsDefenderFeatures } | Should Throw $failureMessage
+
+        Assert-MockCalled Get-Command -Exactly 1 -Scope It -ModuleName WindowsDefenderManager -ParameterFilter {
+            $Name -eq "Set-MpPreference"
+        }
+    }
 }
 
 Describe "Disable-WindowsDefenderFeatures" {
