@@ -31,3 +31,7 @@ netsh advfirewall firewall add rule name=$OutboundRule dir=out action=allow prot
 $arg="{0}:{1}" -f $DesiredHost,$DesiredPort
 "Running: slmgr.vbs /skms $arg"
 cscript //B 'C:\\Windows\\System32\\slmgr.vbs' /skms $arg
+
+if ($LastExitCode -ne 0) {
+  Write-Error "Running slmgr.vbs /skms $arg exited with non-zero code: ${LastExitCode}"
+}
