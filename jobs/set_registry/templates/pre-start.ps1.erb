@@ -1,0 +1,14 @@
+﻿$ErrorActionPreference = "Stop"
+
+<% p('entries').each do |entry| %>
+$RegistryPath =  "<%= entry["path"] %>"
+$Name         =  "<%= entry["name"] %>"
+$Value        =  "<%= entry["value"] %>"
+$Type         =  "<%= entry["type"] %>"
+
+If (-NOT (Test-Path $RegistryPath)) {
+  New-Item -Path $RegistryPath -Force | Out-Null
+}  
+
+New-ItemProperty -Path $RegistryPath -Name $Name -Value $Value -PropertyType $Type -Force 
+<% end %>
