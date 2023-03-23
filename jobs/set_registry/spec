@@ -1,0 +1,31 @@
+---
+name: set_registry
+description: "Set Windows registy"
+templates:
+  pre-start.ps1.erb: bin/pre-start.ps1
+
+packages: []
+
+properties:
+  entries:
+    description: |
+      Array of registy entries
+    default: []
+    example:
+      entries:
+      - path: "HKLM:\\SYSTEM\\CurrentControlSet\\Services\\LanmanServer\\Parameters"
+        name: "enablesecuritysignature"
+        value: "1"
+        type: "DWord"
+      - path: "HKLM:\\SYSTEM\\CurrentControlSet\\Services\\LanmanServer\\Parameters"
+        name: "requiresecuritysignature"
+        value: "1"
+        type: "DWord"
+      - path: "HKLM:\\SYSTEM\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters"
+        name: "enablesecuritysignature"
+        value: "1"
+        type: "DWord"
+      - path: "HKLM:\\SYSTEM\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters"
+        name: "requiresecuritysignature"
+        value: "1"
+        type: "DWord"
