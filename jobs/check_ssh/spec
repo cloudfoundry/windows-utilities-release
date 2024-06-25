@@ -1,0 +1,10 @@
+---
+name: check_ssh
+description: "This job verifies that ssh is enabled and then disabled"
+templates:
+  pre-start.ps1.erb: bin/pre-start.ps1
+packages: []
+properties:
+  check_ssh.expected:
+    description: "the expected value if ssh is enabled"
+    default: true

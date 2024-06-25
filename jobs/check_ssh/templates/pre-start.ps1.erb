@@ -1,0 +1,119 @@
+﻿$SSHDir = "C:\Program Files\OpenSSH"
+$Expected = [bool]$<%= p("check_ssh.expected") %>
+Write-Host "Running Test..."
+
+$CheckSshState = [PSCustomObject]@{
+    Enabled = "Enabled"
+    Disabled = "Disabled"
+    Pending = "Pending"
+    Error = "Error"
+}
+
+function New-CheckSshState {
+    param($Expected)
+    return $(if ($Expected) {$CheckSshState.Enabled} Else {$CheckSshState.Disabled})
+}
+
+function SSH-Enabled {
+  # Check services
+
+  $agent = Get-Service | Where { $_.Name -eq 'ssh-agent' }
+  if ($agent -eq $null) {
+       Write-Error "ssh-agent service not installed"
+       return $CheckSshState.Error
+  }
+
+  $daemon = Get-Service | Where { $_.Name -eq 'sshd' }
+  if ($daemon -eq $null) {
+       Write-Error "sshd service not installed"
+       return $CheckSshState.Error
+  }
+  # Can't check LGPO - only verify that script ran without error
+
+  # Check firewall
+  $firewallSet = ((Get-NetFirewallRule | where { $_.DisplayName -eq 'SSH' }) -Ne $null)
+
+  Write-Host "Firewall Set: ${firewallSet}"
+  Write-Host "Agent Status: $($agent.Status.ToString())"
+  Write-Host "Daemon Status: $($daemon.Status.ToString())"
+  Write-Host "Agent StartType: $($agent.StartType.ToString())"
+  Write-Host "Daemon StartType: $($daemon.StartType.ToString())"
+
+  If (
+    $firewallSet -And
+    ($agent.Status -Eq "Running") -And
+    ($daemon.Status -Eq "Running") -And
+    ($agent.StartType -Eq "Automatic") -And
+    ($daemon.StartType -Eq "Automatic")
+  ) {
+    return $CheckSshState.Enabled
+  }
+
+  If (
+    !$firewallSet -And
+    ($agent.Status -Eq "Stopped") -And
+    ($daemon.Status -Eq "Stopped") -And
+    ($agent.StartType -Eq "Disabled") -And
+    ($daemon.StartType -Eq "Disabled")
+  ) {
+    return $CheckSshState.Disabled
+  }
+
+  # This can happen if we catch 'enable_ssh' in the middle of enabling SSH.
+  $msg = @"
+  Invalid configuration:
+    firewallSet: $($firewallSet)
+    agent.Status: $($agent.Status)
+    daemon.Status: $($daemon.Status)
+    agent.StartType: $($agent.StartType)
+    daemon.StartType: $($daemon.StartType)
+"@
+  Write-Host $msg
+  return $CheckSshState.Pending
+}
+
+Write-Host "Starting: $(Get-Date -Format g)"
+Write-Host "Expected: ${Expected}"
+
+if ($(SSH-Enabled) -eq $CheckSshState.Error) {
+  Write-Host "Error, exiting."
+  Exit 1
+}
+
+$ExpectedSshEnabledState = New-CheckSshState $Expected
+for ($i=0; $i -lt 20 -and ($(SSH-Enabled) -eq $CheckSshState.Pending -or $(SSH-Enabled) -ne $ExpectedSshEnabledState); $i++) {
+  Write-Host "Sleeping..."
+  Start-Sleep 5
+}
+
+Write-Host "Waking up"
+
+$Actual = SSH-Enabled
+Write-Host "Actual: ${Actual}"
+Write-Host "Expected: ${ExpectedSshEnabledState}"
+
+If ($Actual -Ne $ExpectedSshEnabledState) {
+  Write-Host "Expected SSH enabled to be $($Expected.ToString())"
+  Exit 1
+}
+
+function Test-Key {
+  param (
+    $name=$1
+  )
+  $key=Join-Path $SSHDir $name
+  echo $key
+  if (Test-Path $key) {
+    Write-Error "Private Key: '${key}' Has Not Been Removed"
+    Exit 1
+  }
+}
+
+# Ensure ssh private keys have been deleted
+Test-Key 'ssh_host_dsa_key'
+Test-Key 'ssh_host_rsa_key'
+Test-Key 'ssh_host_ecdsa_key'
+Test-Key 'ssh_host_ed25519_key'
+
+Write-Host "SUCCESS"
+Exit 0
