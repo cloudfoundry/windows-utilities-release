@@ -12,16 +12,14 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/cloudfoundry/windows-utilities-release/windows-utilities-tests"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 )
 
 var (
-	bosh              *wuts.BoshCommand
-	stemcellInfo      wuts.ManifestInfo
+	bosh              *BoshCommand
+	stemcellInfo      ManifestInfo
 	releaseVersion    string
 	winUtilRelVersion string
 )
@@ -32,19 +30,19 @@ func init() {
 }
 
 var _ = Describe("Windows Utilities Release", func() {
-	var config *wuts.Config
+	var config *Config
 
 	SynchronizedBeforeSuite(func() []byte {
 		var err error
-		config, err = wuts.NewConfig()
+		config, err = NewConfig()
 		Expect(err).To(Succeed())
 
 		rand.Seed(time.Now().UnixNano())
 
-		boshCertPath := wuts.writeCert(config.Bosh.CaCert)
-		boshGwPrivateKeyPath := wuts.writeCert(config.Bosh.GwPrivateKey)
+		boshCertPath := writeCert(config.Bosh.CaCert)
+		boshGwPrivateKeyPath := writeCert(config.Bosh.GwPrivateKey)
 
-		timeout := wuts.BOSH_TIMEOUT
+		timeout := BOSH_TIMEOUT
 		if s := os.Getenv("WUTS_BOSH_TIMEOUT"); s != "" {
 			d, err := time.ParseDuration(s)
 			if err != nil {
@@ -56,7 +54,7 @@ var _ = Describe("Windows Utilities Release", func() {
 		}
 		log.Printf("Using timeout (%s) for BOSH commands\n", timeout)
 
-		bosh = wuts.NewBoshCommand(config, boshCertPath, boshGwPrivateKeyPath, timeout)
+		bosh = NewBoshCommand(config, boshCertPath, boshGwPrivateKeyPath, timeout)
 
 		Expect(bosh.Run("login")).To(Succeed())
 
@@ -64,11 +62,11 @@ var _ = Describe("Windows Utilities Release", func() {
 		Expect(err).To(Succeed())
 		Expect(matches).To(HaveLen(1))
 
-		stemcellInfo, err = wuts.fetchManifestInfo(matches[0], "stemcell.MF")
+		stemcellInfo, err = fetchManifestInfo(matches[0], "stemcell.MF")
 		Expect(err).To(Succeed())
 
-		releaseVersion = wuts.createAndUploadRelease(filepath.Join("..", ".."))
-		winUtilRelVersion = wuts.createAndUploadRelease(config.WindowsUtilitiesPath)
+		releaseVersion = createAndUploadRelease(filepath.Join("..", ".."))
+		winUtilRelVersion = createAndUploadRelease(config.WindowsUtilitiesPath)
 
 		// Upload latest stemcell
 		matches, err = filepath.Glob(config.StemcellPath)
@@ -103,15 +101,15 @@ var _ = Describe("Windows Utilities Release", func() {
 		releaseVersion = string(versions[:dividerIndex])
 		winUtilRelVersion = string(versions[dividerIndex+1:])
 		var err error
-		config, err = wuts.NewConfig()
+		config, err = NewConfig()
 		Expect(err).To(Succeed())
 
 		rand.Seed(time.Now().UnixNano())
 
-		boshCertPath := wuts.writeCert(config.Bosh.CaCert)
-		boshGwPrivateKeyPath := wuts.writeCert(config.Bosh.GwPrivateKey)
+		boshCertPath := writeCert(config.Bosh.CaCert)
+		boshGwPrivateKeyPath := writeCert(config.Bosh.GwPrivateKey)
 
-		timeout := wuts.BOSH_TIMEOUT
+		timeout := BOSH_TIMEOUT
 		if s := os.Getenv("WUTS_BOSH_TIMEOUT"); s != "" {
 			d, err := time.ParseDuration(s)
 			if err != nil {
@@ -127,10 +125,10 @@ var _ = Describe("Windows Utilities Release", func() {
 		Expect(err).To(Succeed())
 		Expect(matches).To(HaveLen(1))
 
-		stemcellInfo, err = wuts.fetchManifestInfo(matches[0], "stemcell.MF")
+		stemcellInfo, err = fetchManifestInfo(matches[0], "stemcell.MF")
 		Expect(err).To(Succeed())
 
-		bosh = wuts.NewBoshCommand(config, boshCertPath, boshGwPrivateKeyPath, timeout)
+		bosh = NewBoshCommand(config, boshCertPath, boshGwPrivateKeyPath, timeout)
 	})
 
 	SynchronizedAfterSuite(func() {
@@ -272,7 +270,7 @@ var _ = Describe("Windows Utilities Release", func() {
 
 			instanceName = "check-rdp"
 			username = "Administrator"
-			password = wuts.generateSemiRandomWindowsPassword()
+			password = generateSemiRandomWindowsPassword()
 
 			deploymentNameRDP = fmt.Sprintf("windows-utilities-test-rdp-%d", time.Now().UTC().UnixNano())
 
@@ -296,14 +294,14 @@ var _ = Describe("Windows Utilities Release", func() {
 			Skip("This test doesn't validate that RDP is enabled, and causes frequent failures")
 			Expect(bosh.Run(fmt.Sprintf("-d %s deploy %s", deploymentNameRDP, manifestPathRDP))).To(Succeed())
 
-			instanceIP, err := wuts.getFirstInstanceIP(deploymentNameRDP, instanceName)
+			instanceIP, err := getFirstInstanceIP(deploymentNameRDP, instanceName)
 			Expect(err).NotTo(HaveOccurred())
 
 			enabledSession := config.doSSHLogin(instanceIP)
 			defer enabledSession.Kill()
 
 			Eventually(func() (*Session, error) {
-				rdpSession, err := wuts.runCommand("/bin/bash", "-c", "/usr/local/bin/rdp-sec-check.pl localhost")
+				rdpSession, err := runCommand("/bin/bash", "-c", "/usr/local/bin/rdp-sec-check.pl localhost")
 				Eventually(rdpSession, 30*time.Second).Should(Exit())
 
 				return rdpSession, err
