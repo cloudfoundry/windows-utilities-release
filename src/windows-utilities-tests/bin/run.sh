@@ -17,5 +17,5 @@ trap cleanup_ssh_tunnels RETURN
   set -eu -o pipefail
   cd "${ROOT_DIR}"
 
-  go run github.com/onsi/ginkgo/ginkgo run -r -v .
+  go run -mod=mod github.com/onsi/ginkgo/ginkgo run -r -v .
 )
