@@ -7,8 +7,6 @@ name: {{.DeploymentName}}
 releases:
 - name: {{.ReleaseName}}
   version: {{.WutsVersion}}
-- name: windows-utilities
-  version: '{{.WinUtilVersion}}'
 
 stemcells:
 - alias: windows
@@ -118,8 +116,6 @@ name: {{.DeploymentName}}
 releases:
 - name: {{.ReleaseName}}
   version: {{.WutsVersion}}
-- name: windows-utilities
-  version: '{{.WinUtilVersion}}'
 
 stemcells:
 - alias: windows
@@ -162,8 +158,6 @@ name: {{.DeploymentName}}
 releases:
 - name: {{.ReleaseName}}
   version: '{{.WutsVersion}}'
-- name: windows-utilities
-  version: '{{.WinUtilVersion}}'
 
 stemcells:
 - alias: windows
@@ -213,8 +207,6 @@ name: {{.DeploymentName}}
 releases:
 - name: {{.ReleaseName}}
   version: '{{.WutsVersion}}'
-- name: windows-utilities
-  version: '{{.WinUtilVersion}}'
 
 stemcells:
 - alias: windows

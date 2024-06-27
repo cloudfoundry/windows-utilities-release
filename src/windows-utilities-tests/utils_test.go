@@ -35,7 +35,6 @@ type ManifestProperties struct {
 	Network         string
 	StemcellOS      string
 	StemcellVersion string
-	WinUtilVersion  string
 	WutsVersion     string
 }
 
@@ -50,7 +49,6 @@ type Config struct {
 		GwUser       string `json:"gw_user"`
 	} `json:"bosh"`
 	StemcellPath         string `json:"stemcell_path"`
-	WindowsUtilitiesPath string `json:"windows_utilities_path"`
 	StemcellOS           string `json:"stemcell_os"`
 	Az                   string `json:"az"`
 	VmType               string `json:"vm_type"`
@@ -79,7 +77,6 @@ func NewConfig() (*Config, error) {
 
 func (c *Config) newManifestProperties(deploymentName string) ManifestProperties {
 	log.Println("BeforeSuite: releaseVersion =", releaseVersion)
-	log.Println("BeforeSuite: winUtilRelVersion =", winUtilRelVersion)
 	return ManifestProperties{
 		DeploymentName:  deploymentName,
 		ReleaseName:     "windows-utilities",
@@ -89,7 +86,6 @@ func (c *Config) newManifestProperties(deploymentName string) ManifestProperties
 		Network:         c.Network,
 		StemcellOS:      c.StemcellOS,
 		StemcellVersion: stemcellInfo.Version,
-		WinUtilVersion:  winUtilRelVersion,
 		WutsVersion:     releaseVersion,
 	}
 }

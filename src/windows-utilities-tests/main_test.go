@@ -1,7 +1,6 @@
 package wuts_test
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"math/rand"
@@ -18,10 +17,9 @@ import (
 )
 
 var (
-	bosh              *BoshCommand
-	stemcellInfo      ManifestInfo
-	releaseVersion    string
-	winUtilRelVersion string
+	bosh           *BoshCommand
+	stemcellInfo   ManifestInfo
+	releaseVersion string
 )
 
 func init() {
@@ -66,7 +64,6 @@ var _ = Describe("Windows Utilities Release", func() {
 		Expect(err).To(Succeed())
 
 		releaseVersion = createAndUploadRelease(filepath.Join("..", ".."))
-		winUtilRelVersion = createAndUploadRelease(config.WindowsUtilitiesPath)
 
 		// Upload latest stemcell
 		matches, err = filepath.Glob(config.StemcellPath)
@@ -95,11 +92,9 @@ var _ = Describe("Windows Utilities Release", func() {
 		Expect(bosh.Run(fmt.Sprintf("-d %s delete-deployment --force", deploymentName))).To(Succeed())
 		Expect(os.RemoveAll(manifestPath)).To(Succeed())
 
-		return []byte(fmt.Sprintf("%s#%s", releaseVersion, winUtilRelVersion))
-	}, func(versions []byte) {
-		dividerIndex := bytes.Index(versions, []byte{'#'})
-		releaseVersion = string(versions[:dividerIndex])
-		winUtilRelVersion = string(versions[dividerIndex+1:])
+		return []byte(releaseVersion)
+	}, func(version []byte) {
+		releaseVersion = string(version)
 		var err error
 		config, err = NewConfig()
 		Expect(err).To(Succeed())
@@ -138,7 +133,7 @@ var _ = Describe("Windows Utilities Release", func() {
 		}
 
 		bosh.Run(fmt.Sprintf("delete-stemcell %s/%s", stemcellInfo.Name, stemcellInfo.Version))
-		Expect(bosh.Run(fmt.Sprintf("delete-release windows-utilities/%s", winUtilRelVersion))).To(Succeed())
+		Expect(bosh.Run(fmt.Sprintf("delete-release windows-utilities/%s", releaseVersion))).To(Succeed())
 	})
 
 	Context("KMS", func() {
