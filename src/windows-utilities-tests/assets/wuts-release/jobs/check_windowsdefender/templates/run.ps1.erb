@@ -1,0 +1,15 @@
+Import-Module $PSScriptRoot/../modules/CheckWindowsDefender.psd1
+
+$Expected = [bool]$<%= p("check_windowsdefender.expected") %>
+
+if ($Expected) {
+    $result = Assert-DefenderEnabled
+} else {
+    $result = Assert-DefenderDisabled
+}
+
+if ($result) {
+    Exit 0
+}
+
+Exit 1

@@ -1,0 +1,11 @@
+---
+name: check_set_password
+description: "This job verifies that the set_password job successfully sets Administrator password"
+templates:
+  run.ps1.erb: bin/run.ps1
+  security.inf: inf/security.inf
+packages: []
+properties:
+  check_set_password.expected:
+    description: "the expected value if set_password is enabled"
+    default: Password123!

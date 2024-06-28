@@ -1,0 +1,10 @@
+---
+name: check_rdp
+description: "This job verifies that rdp is enabled and then disabled"
+templates:
+  post-start.ps1.erb: bin/post-start.ps1
+packages: []
+properties:
+  check_rdp.expected:
+    description: "the expected value if rdp is enabled"
+    default: true

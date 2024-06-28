@@ -1,0 +1,27 @@
+﻿$ErrorActionPreference = "Stop"
+
+Write-Host "Running set_password Test..."
+
+$password = [string]"<%= p("check_set_password.expected") %>"
+
+secedit /configure /db secedit.sdb /cfg c:\var\vcap\jobs\check_set_password\inf\security.inf
+
+Add-Type -AssemblyName System.DirectoryServices.AccountManagement
+$ComputerName=hostname
+$DS = New-Object System.DirectoryServices.AccountManagement.PrincipalContext('machine',$ComputerName)
+
+$script:i = 0;
+While ($script:i -lt 10) {
+  $msg="Checking Administrator password; try {0}" -f $script:i
+  Write-Host $msg
+
+  if ($DS.ValidateCredentials('Administrator', $password)) {
+    Exit 0
+  } Else {
+    $script:i++
+    Start-Sleep -s 5
+  }
+}
+
+Write-Error "Administrator password was not set to $password"
+Exit 1

@@ -1,0 +1,12 @@
+---
+name: check_windowsdefender
+description: "Verifier for Windows Defender features that should be enabled"
+templates:
+  run.ps1.erb: bin/run.ps1
+  modules/CheckWindowsDefender.psd1: modules/CheckWindowsDefender.psd1
+  modules/CheckWindowsDefender.psm1: modules/CheckWindowsDefender.psm1
+packages: []
+properties:
+  check_windowsdefender.expected:
+    description: "whether the expected windows defender features should be enable on the instance"
+    default: true

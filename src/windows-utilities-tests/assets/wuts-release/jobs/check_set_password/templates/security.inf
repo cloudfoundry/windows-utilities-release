@@ -1,0 +1,7 @@
+[Unicode]
+Unicode=yes
+[Version]
+signature="$CHICAGO$"
+Revision=1
+[Privilege Rights]
+SeDenyNetworkLogonRight =

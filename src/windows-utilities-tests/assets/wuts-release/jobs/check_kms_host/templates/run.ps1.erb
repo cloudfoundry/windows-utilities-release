@@ -1,0 +1,73 @@
+﻿$ExpectedHost="<%= p("check_kms_host.host").to_s %>"
+$ExpectedPort="<%= p("check_kms_host.port").to_s %>"
+
+$KMSServicePath="HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SoftwareProtectionPlatform"
+
+$ActualHost="{0}" -f (Get-ItemProperty -Path $KMSServicePath).KeyManagementServiceName
+$ActualPort="{0}" -f (Get-ItemProperty -Path $KMSServicePath).KeyManagementServicePort
+
+$script:i = 0;
+While ($script:i -lt 10) {
+  $msg="Checking host and port; try {0}" -f $script:i
+  Write-Host msg
+
+  If (($ExpectedHost -Ne $ActualHost) -Or ($ExpectedPort -Ne $ActualPort)) {
+    $script:i++
+    Start-Sleep -s 5
+  } Else {
+    Break
+  }
+}
+
+# Check KMS settings in registry
+$DefaultKms=@(
+  "kms.windows.googlecloud.com", # GCP
+  "169.254.169.250", # Amazon
+  "169.254.169.251", # Amazon
+  "azkms.core.windows.net" # Azure
+)
+
+If (($ExpectedHost -Eq "") -And ($DefaultKms.Contains($ActualHost))) {
+  "Default KMS Host set by IaaS"
+} Else {
+  If ($ExpectedHost -Ne $ActualHost) {
+    $msg="Error: Expected KMS Host to equal {0}; Got {1}" -f $ExpectedHost,$ActualHost
+    Write-Error $msg
+    Exit 1
+  }
+  If ($ExpectedPort -Ne $ActualPort) {
+    $msg="Error: Expected KMS Port to equal {0}; Got {1}" -f $ExpectedPort,$ActualPort
+    Write-Error $msg
+    Exit 1
+  }
+}
+
+
+# Check firewall rules
+if ($ExpectedPort -Ne "") {
+  $InboundRule="Open inbound $ExpectedPort for KMS Server"
+  if ((Get-NetFirewallRule | where { $_.DisplayName -eq $InboundRule }) -eq $null) {
+    $msg="Error: Missing firewall rule: $InboundRule"
+    Write-Error $msg
+    Exit 1
+  }
+  $OutboundRule="Open outbound $ExpectedPort for KMS Server"
+  if ((Get-NetFirewallRule | where { $_.DisplayName -eq $OutboundRule }) -eq $null) {
+    $msg="Error: Missing firewall rule: $OutboundRule"
+    Write-Error $msg
+    Exit 1
+  }
+} Else {
+  if (($UnexpectedRule = Get-NetFirewallRule | where { $_.DisplayName -match "Open inbound \d+ for KMS Server" }) -ne $null) {
+    $msg="Error: Unexpected firewall rule: {0}" -f $UnexpectedRule.DisplayName
+    Write-Error $msg
+    Exit 1
+  }
+  if (($UnexpectedRule = Get-NetFirewallRule | where { $_.DisplayName -match "Open outbound \d+ for KMS Server" }) -ne $null) {
+    $msg="Error: Unexpected firewall rule: {0}" -f $UnexpectedRule.DisplayName
+    Write-Error $msg
+    Exit 1
+  }
+}
+
+Exit 0

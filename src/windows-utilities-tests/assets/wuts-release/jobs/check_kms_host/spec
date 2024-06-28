@@ -1,0 +1,13 @@
+---
+name: check_kms_host
+description: "This errand verifies that kms host info was set up"
+templates:
+  run.ps1.erb: bin/run.ps1
+packages: []
+properties:
+  check_kms_host.host:
+    description: "Expected host of KMS server"
+    default: ""
+  check_kms_host.port:
+    description: "Expected port of KMS server"
+    default: ""

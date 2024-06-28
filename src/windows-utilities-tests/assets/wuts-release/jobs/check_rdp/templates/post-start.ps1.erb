@@ -1,0 +1,72 @@
+﻿$IsEnabled = [bool]$<%= p("check_rdp.expected") %>
+
+"Running Test 'check_rdp' - we expect RDP with IsEnabled: $IsEnabled"
+
+$Errors = @()
+
+# Firewall
+
+# The Enabled field is an Enum that converts to bool
+[int]$RuleDisabled = 1
+[int]$RuleEnabled = 2
+[int]$expState = if ($IsEnabled) { $RuleEnabled } else { $RuleDisabled }
+
+$expectedRules = Get-NetFirewallRule -DisplayName "Remote Desktop*" | where { $_.Enabled -eq $expState }
+foreach ($rule in $expectedRules) {
+    $Errors += "Expected firewall rule $($rule.Name) to be $IsEnabled got: $($rule.Enabled)"
+}
+
+# Service
+
+$expectedStatus = 'Stopped'
+
+if ($IsEnabled) {
+    $expectedStatus = 'Running'
+}
+
+for ($i=0; $i -lt 20 -and ($(Get-Service 'TermService').Status -ne $expectedStatus); $i++) {
+      Write-Host "Sleeping..."
+      Start-Sleep 5
+}
+
+$rdp=(Get-Service 'TermService')
+if ($rdp.Status -ne $expectedStatus) {
+    $Errors += "Expected TermService to be '$expectedStatus' got: $($rdp.Status)"
+}
+
+$startMode = (Get-WmiObject -Class Win32_Service -Property StartMode -Filter "Name='TermService'").StartMode
+if ($IsEnabled) {
+    if ($startMode -eq 'Disabled') {
+        $Errors += "Expected TermService to not be disabled"
+    }
+} else {
+    if ($startMode -ne 'Disabled') {
+        $Errors += "Expected TermService to be disabled got: $($rdp.StartType)"
+    }
+}
+
+# fDenyTSConnections determines if RDP is enabled
+
+$denyConnections=(Get-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server").fDenyTSConnections
+if ($IsEnabled) {
+    if ($denyConnections -ne 0) {
+        $Errors += "Expected 'fDenyTSConnections' to be 0 got: $denyConnections"
+    }
+} else {
+    if ($denyConnections -ne 1) {
+        $Errors += "Expected 'fDenyTSConnections' to be 1 got: $denyConnections"
+    }
+}
+
+# Summary
+
+if ($Errors.Count) {
+    "Test failed: found $($Errors.Count) errors:"
+    foreach ($msg in $Errors) {
+        "Error: $msg"
+    }
+    Exit 1
+}
+
+"Test passed"
+Exit 0
