@@ -82,7 +82,7 @@ func (c *Config) newManifestProperties(deploymentName string) ManifestProperties
 	log.Println("BeforeSuite: winUtilRelVersion =", winUtilRelVersion)
 	return ManifestProperties{
 		DeploymentName:  deploymentName,
-		ReleaseName:     "windows-utilities",
+		ReleaseName:     "wuts-release",
 		AZ:              c.Az,
 		VmType:          c.VmType,
 		VmExtensions:    c.VmExtensions,

@@ -65,7 +65,7 @@ var _ = Describe("Windows Utilities Release", func() {
 		stemcellInfo, err = fetchManifestInfo(matches[0], "stemcell.MF")
 		Expect(err).To(Succeed())
 
-		releaseVersion = createAndUploadRelease(filepath.Join("..", ".."))
+		releaseVersion = createAndUploadRelease(filepath.Join("assets", "wuts-release"))
 		winUtilRelVersion = createAndUploadRelease(config.WindowsUtilitiesPath)
 
 		// Upload latest stemcell
@@ -138,6 +138,7 @@ var _ = Describe("Windows Utilities Release", func() {
 		}
 
 		bosh.Run(fmt.Sprintf("delete-stemcell %s/%s", stemcellInfo.Name, stemcellInfo.Version))
+		Expect(bosh.Run(fmt.Sprintf("delete-release wuts-release/%s", releaseVersion))).To(Succeed())
 		Expect(bosh.Run(fmt.Sprintf("delete-release windows-utilities/%s", winUtilRelVersion))).To(Succeed())
 	})
 
