@@ -1,0 +1,14 @@
+---
+platform: windows
+
+inputs:
+- name: pester
+- name: windows-utilities-release
+
+run:
+  path: powershell
+  args:
+  - "-ExecutionPolicy"
+  - "Bypass"
+  - "-Command"
+  - windows-utilities-release/ci/tasks/test-check-windows-defender/run.ps1
