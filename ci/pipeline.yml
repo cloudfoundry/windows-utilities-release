@@ -250,6 +250,7 @@ jobs:
           SSH_TUNNEL_IP: ((iaas_directors_gcp-director_bosh_jumpbox_ip))
           SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_gcp-director_bosh_jumpbox_ssh.private_key))
           SSH_TUNNEL_USER: ((iaas_directors_gcp-director_bosh_jumpbox_username))
+          STEMCELL_OS: windows2019
           VM_EXTENSIONS: "50GB_ephemeral_disk"
           VM_TYPE: large
       ensure:
@@ -295,6 +296,7 @@ jobs:
           SSH_TUNNEL_IP: ((nimbus_windows_bosh_jumpbox_ip))
           SSH_TUNNEL_PRIVATE_KEY: ((nimbus_windows_bosh_jumpbox_ssh.private_key))
           SSH_TUNNEL_USER: ((nimbus_windows_bosh_jumpbox_username))
+          STEMCELL_OS: windows2019
           VM_EXTENSIONS: ""
           VM_TYPE: default
       ensure:
@@ -339,6 +341,7 @@ jobs:
           SSH_TUNNEL_IP: ((iaas_directors_aws-director_bosh_jumpbox_ip))
           SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_aws-director_bosh_jumpbox_ssh.private_key))
           SSH_TUNNEL_USER: ((iaas_directors_aws-director_bosh_jumpbox_username))
+          STEMCELL_OS: windows2019
           VM_EXTENSIONS: ""
           VM_TYPE: large
       ensure:
@@ -409,6 +412,7 @@ jobs:
             SSH_TUNNEL_IP: ((iaas_directors_azure-director_bosh_jumpbox_ip))
             SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_azure-director_bosh_jumpbox_ssh.private_key))
             SSH_TUNNEL_USER: ((iaas_directors_azure-director_bosh_jumpbox_username))
+            STEMCELL_OS: windows2019
             VM_EXTENSIONS: ""
             VM_TYPE: default
         ensure:
