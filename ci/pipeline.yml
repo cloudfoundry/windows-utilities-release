@@ -6,11 +6,6 @@ resources:
     private_key: ((github_deploy_key_windows-utilities-release.private_key))
     branch: master
 
-- name: greenhouse-ci
-  type: git
-  source:
-    uri: https://github.com/cloudfoundry/greenhouse-ci.git
-
 - name: golang-release
   type: git
   source:
@@ -36,101 +31,20 @@ resources:
     secret_access_key: ((bosh_windows_ci_aws_access_key.password))
     initial_version: 0.9.0
 
-- name: gcp-2019-stemcell-rc
-  type: s3
+- name: gcp-2019-stemcell
+  type: bosh-io-stemcell
   source:
-    bucket: all-bosh-windows
-    regexp: 2019/tested/gcp/light-bosh-stemcell-(.*)-google-kvm-windows2019-go_agent.tgz
-    access_key_id: ((bosh_windows_ci_aws_access_key.username))
-    secret_access_key: ((bosh_windows_ci_aws_access_key.password))
+    name: bosh-google-kvm-windows2019-go_agent
 
-- name: vsphere-2019-stemcell
-  type: s3
+- name: aws-2019-stemcell
+  type: bosh-io-stemcell
   source:
-    bucket: bosh-windows-stemcells-private
-    regexp: 2019/promoted-stembuild-linux-stemcells/bosh-stemcell-(.*)-vsphere-esxi-windows2019-go_agent.tgz
-    access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
-    secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
-    aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
+    name: bosh-aws-xen-hvm-windows2019-go_agent
 
-- name: aws-2019-stemcell-rc
-  type: s3
+- name: azure-2019-stemcell
+  type: bosh-io-stemcell
   source:
-    bucket: all-bosh-windows
-    regexp: 2019/tested/aws/light-bosh-stemcell-(.*)-aws-xen-hvm-windows2019-go_agent-us-east-1.tgz
-    access_key_id: ((bosh_windows_ci_aws_access_key.username))
-    secret_access_key: ((bosh_windows_ci_aws_access_key.password))
-
-- name: azure-2019-rc
-  type: s3
-  source:
-    bucket: all-bosh-windows
-    regexp: 2019/tested/azure/light-bosh-stemcell-(.*)-azure-hyperv-windows2019-go_agent.tgz
-    access_key_id: ((bosh_windows_ci_aws_access_key.username))
-    secret_access_key: ((bosh_windows_ci_aws_access_key.password))
-
-- name: azure-2019-stemcell-version
-  type: semver
-  source:
-    bucket: all-bosh-windows
-    key: 2019/versions/azure
-    access_key_id: ((bosh_windows_ci_aws_access_key.username))
-    secret_access_key: ((bosh_windows_ci_aws_access_key.password))
-    initial_version: 2019.0.0
-
-- name: azure-2019-vhd-uri
-  type: s3
-  source:
-    bucket: all-bosh-windows
-    regexp: 2019/untested/azure/inputs/bosh-stemcell-(.*)-azure-vhd-uri.txt
-    access_key_id: ((bosh_windows_ci_aws_access_key.username))
-    secret_access_key: ((bosh_windows_ci_aws_access_key.password))
-
-# locks
-- name: gcp-2019-lock
-  type: pool
-  tags: [ broadcom ]
-  source:
-    branch: master
-    pool: gcp-wuts-2019
-    private_key: ((github_deploy_key_Bosh-Windows-Locks.private_key))
-    uri: git@github.gwd.broadcom.net:TNZ/Bosh-Windows-Locks.git
-
-- name: vsphere-2019-lock
-  type: pool
-  tags: [ broadcom ]
-  source:
-    branch: master
-    pool: vsphere-2019
-    private_key: ((github_deploy_key_Bosh-Windows-Locks.private_key))
-    uri: git@github.gwd.broadcom.net:TNZ/Bosh-Windows-Locks.git
-
-- name: aws-2019-lock
-  type: pool
-  tags: [ broadcom ]
-  source:
-    branch: master
-    pool: aws-wuts-2019
-    private_key: ((github_deploy_key_Bosh-Windows-Locks.private_key))
-    uri: git@github.gwd.broadcom.net:TNZ/Bosh-Windows-Locks.git
-
-- name: azure-2019-lock
-  type: pool
-  tags: [ broadcom ]
-  source:
-    branch: master
-    pool: azure-wuts-2019
-    private_key: ((github_deploy_key_Bosh-Windows-Locks.private_key))
-    uri: git@github.gwd.broadcom.net:TNZ/Bosh-Windows-Locks.git
-
-- name: azure-download-lock
-  type: pool
-  tags: [ broadcom ]
-  source:
-    branch: master
-    pool: stemcells-azure
-    private_key: ((github_deploy_key_Bosh-Windows-Locks.private_key))
-    uri: git@github.gwd.broadcom.net:TNZ/Bosh-Windows-Locks.git
+    name: bosh-azure-hyperv-windows2019-go_agent
 
 - name: bosh-integration-image
   type: registry-image
@@ -138,21 +52,6 @@ resources:
     repository: bosh/integration
     username: ((docker.username))
     password: ((docker.password))
-
-- name: ci-azcopy-image
-  type: registry-image
-  source:
-    repository: pivotalgreenhouse/ci-azcopy
-    username: ((docker.username))
-    password: ((docker.password))
-
-- name: sunday
-  type: time
-  source:
-    days: [Sunday]
-    start: 4:00 AM
-    stop: 5:00 AM
-    location: America/New_York
 
 - name: weekly
   type: time
@@ -200,244 +99,109 @@ jobs:
   serial: true
   plan:
   - in_parallel:
-      fail_fast: true
-      steps:
-      - get: pester
-      - get: windows-utilities-release
-        trigger: true
+    - get: pester
+    - get: windows-utilities-release
+      trigger: true
   - in_parallel:
-      fail_fast: true
-      steps:
-      - task: check-windows-defender-tests
-        file: windows-utilities-release/ci/tasks/test-check-windows-defender/task.yml
-        tags: [ windows-nimbus ]
-      - task: enable-windows-defender-tests
-        file: windows-utilities-release/ci/tasks/test-enable-windows-defender/task.yml
-        tags: [ windows-nimbus ]
+    - task: check-windows-defender-tests
+      file: windows-utilities-release/ci/tasks/test-check-windows-defender/task.yml
+      tags: [ windows-nimbus ]
+    - task: enable-windows-defender-tests
+      file: windows-utilities-release/ci/tasks/test-enable-windows-defender/task.yml
+      tags: [ windows-nimbus ]
 
 - name: run-wuts-gcp-2019
   serial: true
   plan:
-    - put: gcp-2019-lock
-      inputs: detect
+    - in_parallel:
+      - get: windows-utilities-release
+        passed: [test-windows-utilities]
+        trigger: true
+      - get: stemcell
+        resource: gcp-2019-stemcell
+      - get: bosh-integration-image
+    - task: run-wuts
+      file: windows-utilities-release/ci/tasks/run-wuts/task.yml
+      image: bosh-integration-image
       params:
-        acquire: true
-      tags: [ broadcom ]
-    - do:
-      - in_parallel:
-          fail_fast: true
-          steps:
-          - get: ci
-            resource: greenhouse-ci
-          - get: windows-utilities-release
-            passed: [test-windows-utilities]
-            trigger: true
-          - get: gcp-2019-stemcell-rc
-          - get: bosh-integration-image
-          - get: sunday
-            trigger: true
-      - task: run-wuts
-        file: ci/tasks/run-wuts/task.yml
-        image: bosh-integration-image
-        input_mapping: { stemcell: gcp-2019-stemcell-rc }
-        params:
-          AZ: az1
-          BOSH_CA_CERT: ((iaas_directors_gcp-director_bosh_ca_cert.ca))
-          BOSH_CLIENT: ((iaas_directors_gcp-director_bosh_client.username))
-          BOSH_CLIENT_SECRET: ((iaas_directors_gcp-director_bosh_client.password))
-          BOSH_ENVIRONMENT: ((iaas_directors_gcp-director_bosh_environment))
-          NETWORK: default
-          SSH_TUNNEL_IP: ((iaas_directors_gcp-director_bosh_jumpbox_ip))
-          SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_gcp-director_bosh_jumpbox_ssh.private_key))
-          SSH_TUNNEL_USER: ((iaas_directors_gcp-director_bosh_jumpbox_username))
-          STEMCELL_OS: windows2019
-          VM_EXTENSIONS: "50GB_ephemeral_disk"
-          VM_TYPE: large
-      ensure:
-        put: gcp-2019-lock
-        inputs: detect
-        params:
-          release: gcp-2019-lock
-        tags: [ broadcom ]
-
-- name: run-wuts-vsphere-2019
-  serial: true
-  plan:
-    - put: vsphere-2019-lock
-      inputs: detect
-      params:
-        acquire: true
-      tags: [ broadcom ]
-    - do:
-      - in_parallel:
-          fail_fast: true
-          steps:
-          - get: ci
-            resource: greenhouse-ci
-          - get: windows-utilities-release
-            passed: [test-windows-utilities]
-            trigger: true
-          - get: vsphere-2019-stemcell
-          - get: bosh-integration-image
-          - get: sunday
-            trigger: true
-      - task: run-wuts
-        tags: [windows-nimbus]
-        file: ci/tasks/run-wuts/task.yml
-        image: bosh-integration-image
-        input_mapping: { stemcell: vsphere-2019-stemcell }
-        params:
-          AZ: z1
-          BOSH_CA_CERT: ((nimbus_windows_bosh_ca_cert.ca))
-          BOSH_CLIENT: ((nimbus_windows_bosh_client.username))
-          BOSH_CLIENT_SECRET: ((nimbus_windows_bosh_client.password))
-          BOSH_ENVIRONMENT: ((nimbus_windows_bosh_environment))
-          NETWORK: default
-          SSH_TUNNEL_IP: ((nimbus_windows_bosh_jumpbox_ip))
-          SSH_TUNNEL_PRIVATE_KEY: ((nimbus_windows_bosh_jumpbox_ssh.private_key))
-          SSH_TUNNEL_USER: ((nimbus_windows_bosh_jumpbox_username))
-          STEMCELL_OS: windows2019
-          VM_EXTENSIONS: ""
-          VM_TYPE: default
-      ensure:
-        put: vsphere-2019-lock
-        inputs: detect
-        params:
-          release: vsphere-2019-lock
-        tags: [ broadcom ]
+        AZ: az1
+        BOSH_CA_CERT: ((iaas_directors_gcp-director_bosh_ca_cert.ca))
+        BOSH_CLIENT: ((iaas_directors_gcp-director_bosh_client.username))
+        BOSH_CLIENT_SECRET: ((iaas_directors_gcp-director_bosh_client.password))
+        BOSH_ENVIRONMENT: ((iaas_directors_gcp-director_bosh_environment))
+        NETWORK: default
+        SSH_TUNNEL_IP: ((iaas_directors_gcp-director_bosh_jumpbox_ip))
+        SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_gcp-director_bosh_jumpbox_ssh.private_key))
+        SSH_TUNNEL_USER: ((iaas_directors_gcp-director_bosh_jumpbox_username))
+        VM_EXTENSIONS: "50GB_ephemeral_disk"
+        VM_TYPE: large
 
 - name: run-wuts-aws-2019
   serial: true
   plan:
-    - put: aws-2019-lock
-      inputs: detect
+    - in_parallel:
+      - get: windows-utilities-release
+        passed: [test-windows-utilities]
+        trigger: true
+      - get: stemcell
+        resource: aws-2019-stemcell
+      - get: bosh-integration-image
+    - task: run-wuts
+      file: windows-utilities-release/ci/tasks/run-wuts/task.yml
+      image: bosh-integration-image
       params:
-        acquire: true
-      tags: [ broadcom ]
-    - do:
-      - in_parallel:
-          fail_fast: true
-          steps:
-          - get: ci
-            resource: greenhouse-ci
-          - get: windows-utilities-release
-            passed: [test-windows-utilities]
-            trigger: true
-          - get: aws-2019-stemcell-rc
-          - get: bosh-integration-image
-          - get: sunday
-            trigger: true
-      - task: run-wuts
-        file: ci/tasks/run-wuts/task.yml
-        image: bosh-integration-image
-        input_mapping: { stemcell: aws-2019-stemcell-rc }
-        params:
-          AZ: z1
-          BOSH_CA_CERT: ((iaas_directors_aws-director_bosh_ca_cert.ca))
-          BOSH_CLIENT: ((iaas_directors_aws-director_bosh_client.username))
-          BOSH_CLIENT_SECRET: ((iaas_directors_aws-director_bosh_client.password))
-          BOSH_ENVIRONMENT: ((iaas_directors_aws-director_bosh_environment))
-          NETWORK: default
-          SSH_TUNNEL_IP: ((iaas_directors_aws-director_bosh_jumpbox_ip))
-          SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_aws-director_bosh_jumpbox_ssh.private_key))
-          SSH_TUNNEL_USER: ((iaas_directors_aws-director_bosh_jumpbox_username))
-          STEMCELL_OS: windows2019
-          VM_EXTENSIONS: ""
-          VM_TYPE: large
-      ensure:
-        put: aws-2019-lock
-        inputs: detect
-        params:
-          release: aws-2019-lock
-        tags: [ broadcom ]
+        AZ: z1
+        BOSH_CA_CERT: ((iaas_directors_aws-director_bosh_ca_cert.ca))
+        BOSH_CLIENT: ((iaas_directors_aws-director_bosh_client.username))
+        BOSH_CLIENT_SECRET: ((iaas_directors_aws-director_bosh_client.password))
+        BOSH_ENVIRONMENT: ((iaas_directors_aws-director_bosh_environment))
+        NETWORK: default
+        SSH_TUNNEL_IP: ((iaas_directors_aws-director_bosh_jumpbox_ip))
+        SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_aws-director_bosh_jumpbox_ssh.private_key))
+        SSH_TUNNEL_USER: ((iaas_directors_aws-director_bosh_jumpbox_username))
+        VM_EXTENSIONS: ""
+        VM_TYPE: large
 
 - name: run-wuts-azure-2019
   serial: true
   plan:
-    - do:
-      - in_parallel:
-          fail_fast: true
-          steps:
-          - get: ci
-            resource: greenhouse-ci
-          - get: azure-2019-vhd-uri
-          - get: windows-utilities-release
-            trigger: true
-            passed: [test-windows-utilities]
-          - get: bosh-windows-stemcell
-            resource: azure-2019-rc
-          - get: azure-2019-stemcell-version
-          - get: sunday
-            trigger: true
-          - get: bosh-integration-image
-          - get: ci-azcopy-image
-          - put: azure-download-lock
-            inputs: detect
-            params:
-              acquire: true
-            tags: [ broadcom ]
-      - do:
-        - task: download-heavy
-          file: ci/tasks/download-heavy-azure-stemcell/task.yml
-          image: ci-azcopy-image
-          input_mapping:
-            azure-build-number: azure-2019-stemcell-version
-            azure-base-vhd-uri: azure-2019-vhd-uri
-          params:
-            STEMCELL_OS: windows2019
-        ensure:
-          put: azure-download-lock
-          inputs: detect
-          params:
-            release: azure-download-lock
-          tags: [ broadcom ]
-      - put: azure-2019-lock
-        inputs: detect
-        params:
-          acquire: true
-        tags: [ broadcom ]
-      - do:
-        - task: run-wuts
-          attempts: 3
-          file: ci/tasks/run-wuts/task.yml
-          image: bosh-integration-image
-          input_mapping: { stemcell: heavy-stemcell }
-          params:
-            AZ: z1
-            BOSH_CA_CERT: ((iaas_directors_azure-director_bosh_ca_cert.ca))
-            BOSH_CLIENT: ((iaas_directors_azure-director_bosh_client.username))
-            BOSH_CLIENT_SECRET: ((iaas_directors_azure-director_bosh_client.password))
-            BOSH_ENVIRONMENT: ((iaas_directors_azure-director_bosh_environment))
-            NETWORK: default
-            SSH_TUNNEL_IP: ((iaas_directors_azure-director_bosh_jumpbox_ip))
-            SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_azure-director_bosh_jumpbox_ssh.private_key))
-            SSH_TUNNEL_USER: ((iaas_directors_azure-director_bosh_jumpbox_username))
-            STEMCELL_OS: windows2019
-            VM_EXTENSIONS: ""
-            VM_TYPE: default
-        ensure:
-          put: azure-2019-lock
-          inputs: detect
-          params:
-            release: azure-2019-lock
-          tags: [ broadcom ]
+    - in_parallel:
+      - get: windows-utilities-release
+        trigger: true
+        passed: [test-windows-utilities]
+      - get: stemcell
+        resource: azure-2019-stemcell
+      - get: bosh-integration-image
+    - task: run-wuts
+      attempts: 3
+      file: windows-utilities-release/ci/tasks/run-wuts/task.yml
+      image: bosh-integration-image
+      params:
+        AZ: z1
+        BOSH_CA_CERT: ((iaas_directors_azure-director_bosh_ca_cert.ca))
+        BOSH_CLIENT: ((iaas_directors_azure-director_bosh_client.username))
+        BOSH_CLIENT_SECRET: ((iaas_directors_azure-director_bosh_client.password))
+        BOSH_ENVIRONMENT: ((iaas_directors_azure-director_bosh_environment))
+        NETWORK: default
+        SSH_TUNNEL_IP: ((iaas_directors_azure-director_bosh_jumpbox_ip))
+        SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_azure-director_bosh_jumpbox_ssh.private_key))
+        SSH_TUNNEL_USER: ((iaas_directors_azure-director_bosh_jumpbox_username))
+        VM_EXTENSIONS: ""
+        VM_TYPE: default
 
 - name: release-final
   serial: true
   plan:
   - in_parallel:
-      fail_fast: true
-      steps:
-      - get: windows-utilities-release
-        passed:
-          - run-wuts-aws-2019
-          - run-wuts-azure-2019
-          - run-wuts-gcp-2019
-          - run-wuts-vsphere-2019
-      - get: windows-utilities-release-semver
-        params:
-          bump: minor
-      - get: bosh-shared-ci
+    - get: windows-utilities-release
+      passed:
+        - run-wuts-aws-2019
+        - run-wuts-azure-2019
+        - run-wuts-gcp-2019
+    - get: windows-utilities-release-semver
+      params:
+        bump: minor
+    - get: bosh-shared-ci
   - task: finalize-release
     file: bosh-shared-ci/tasks/release/create-final-release.yml
     image: bosh-integration-image

@@ -1,0 +1,28 @@
+---
+platform: linux
+
+image_resource:
+  type: registry-image
+  source:
+    repository: bosh/integration
+
+inputs:
+  - name: stemcell
+  - name: windows-utilities-release
+
+run:
+  path: ci/shared-tasks/run-wuts/run
+
+params:
+  AZ:
+  BOSH_CA_CERT:
+  BOSH_CLIENT:
+  BOSH_CLIENT_SECRET:
+  BOSH_ENVIRONMENT:
+  NETWORK:
+  NODES: 4
+  SSH_TUNNEL_IP:
+  SSH_TUNNEL_PRIVATE_KEY:
+  SSH_TUNNEL_USER:
+  VM_EXTENSIONS:
+  VM_TYPE:

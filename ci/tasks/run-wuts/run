@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set +x
+export ROOT_DIR=$(pwd)
+
+source "windows-utilities-release/ci/shared-scripts/setup-bosh-proxy.sh"
+setup_bosh_proxy "${SSH_TUNNEL_USER}" "${SSH_TUNNEL_IP}" "${SSH_TUNNEL_PRIVATE_KEY}"
+
+set -ex
+
+cd windows-utilities-release/src/windows-utilities-tests
+
+echo "Write config.json"
+export CONFIG_JSON=config.json
+export STEMCELL_PATH="$(ls ${ROOT_DIR}/stemcell/*.tgz)"
+export WINDOWS_UTILITIES_PATH="${ROOT_DIR}/windows-utilities-release"
+jq -n \
+  '{
+    "bosh": {
+      "ca_cert": env.BOSH_CA_CERT,
+      "client": env.BOSH_CLIENT,
+      "client_secret": env.BOSH_CLIENT_SECRET,
+      "target": env.BOSH_ENVIRONMENT,
+      "ssh_tunnel_ip": env.SSH_TUNNEL_IP,
+      "gw_user": env.SSH_TUNNEL_USER,
+      "gw_private_key": env.SSH_TUNNEL_PRIVATE_KEY
+    },
+    "stemcell_path": env.STEMCELL_PATH,
+    "windows_utilities_path": env.WINDOWS_UTILITIES_PATH,
+    "stemcell_os": "windows2019",
+    "az": env.AZ,
+    "vm_type": env.VM_TYPE,
+    "vm_extensions": env.VM_EXTENSIONS,
+    "network": env.NETWORK,
+    "skip_cleanup_on_rdp_fail": false
+  }' > $CONFIG_JSON
+
+echo "Running tests"
+go run -mod=mod github.com/onsi/ginkgo/ginkgo -v -nodes "${NODES}"
