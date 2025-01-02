@@ -11,7 +11,7 @@ inputs:
   - name: windows-utilities-release
 
 run:
-  path: ci/shared-tasks/run-wuts/run
+  path: windows-utilities-release/ci/tasks/run-wuts/run
 
 params:
   AZ:
