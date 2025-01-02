@@ -36,4 +36,4 @@ jq -n \
   }' > $CONFIG_JSON
 
 echo "Running tests"
-go run -mod=mod github.com/onsi/ginkgo/ginkgo -v -nodes "${NODES}"
+go run github.com/onsi/ginkgo/v2/ginkgo -v -nodes "${NODES}"
