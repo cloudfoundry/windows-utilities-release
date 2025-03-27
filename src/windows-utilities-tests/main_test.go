@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -34,8 +33,6 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	var err error
 	config, err = NewConfig()
 	Expect(err).To(Succeed())
-
-	rand.Seed(time.Now().UnixNano())
 
 	boshCertPath := writeCert(config.Bosh.CaCert)
 	boshGwPrivateKeyPath := writeCert(config.Bosh.GwPrivateKey)
@@ -101,8 +98,6 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	var err error
 	config, err = NewConfig()
 	Expect(err).To(Succeed())
-
-	rand.Seed(time.Now().UnixNano())
 
 	boshCertPath := writeCert(config.Bosh.CaCert)
 	boshGwPrivateKeyPath := writeCert(config.Bosh.GwPrivateKey)
