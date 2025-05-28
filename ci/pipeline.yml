@@ -2,10 +2,8 @@ resources:
 - name: windows-utilities-release
   type: git
   source:
-    uri: https://github.com/cloudfoundry/windows-utilities-release.git
-    username: bosh-admin-bot
-    password: ((github_public_repo_token))
-    branch: master
+    uri: git@github.com:cloudfoundry/windows-utilities-release.git
+    private_key: ((github_deploy_key_windows-utilities-release.private_key))
 
 - name: golang-release
   type: git
