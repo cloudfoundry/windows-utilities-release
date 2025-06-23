@@ -14,6 +14,7 @@ echo "Write config.json"
 export CONFIG_JSON=config.json
 export STEMCELL_PATH="$(ls ${ROOT_DIR}/stemcell/*.tgz)"
 export WINDOWS_UTILITIES_PATH="${ROOT_DIR}/windows-utilities-release"
+export STEMCELL_OS="${STEMCELL_OS:-windows2019}"
 jq -n \
   '{
     "bosh": {
