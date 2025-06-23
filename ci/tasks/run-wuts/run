@@ -27,7 +27,7 @@ jq -n \
     },
     "stemcell_path": env.STEMCELL_PATH,
     "windows_utilities_path": env.WINDOWS_UTILITIES_PATH,
-    "stemcell_os": "windows2019",
+    "stemcell_os": env.STEMCELL_OS,
     "az": env.AZ,
     "vm_type": env.VM_TYPE,
     "vm_extensions": env.VM_EXTENSIONS,
