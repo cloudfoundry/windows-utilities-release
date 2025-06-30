@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
+set -eu -o pipefail
 
 set +x
+if [ -n "${SSH_TUNNEL_USER}" ]; then
+  source "windows-utilities-release/ci/shared-scripts/setup-bosh-proxy.sh"
+  setup_bosh_proxy "${SSH_TUNNEL_USER}" "${SSH_TUNNEL_IP}" "${SSH_TUNNEL_PRIVATE_KEY}"
+fi
+set -x
+
 export ROOT_DIR=$(pwd)
-
-source "windows-utilities-release/ci/shared-scripts/setup-bosh-proxy.sh"
-setup_bosh_proxy "${SSH_TUNNEL_USER}" "${SSH_TUNNEL_IP}" "${SSH_TUNNEL_PRIVATE_KEY}"
-
-set -ex
-
 cd windows-utilities-release/src/windows-utilities-tests
 
 echo "Write config.json"
@@ -22,9 +23,6 @@ jq -n \
       "client": env.BOSH_CLIENT,
       "client_secret": env.BOSH_CLIENT_SECRET,
       "target": env.BOSH_ENVIRONMENT,
-      "ssh_tunnel_ip": env.SSH_TUNNEL_IP,
-      "gw_user": env.SSH_TUNNEL_USER,
-      "gw_private_key": env.SSH_TUNNEL_PRIVATE_KEY
     },
     "stemcell_path": env.STEMCELL_PATH,
     "windows_utilities_path": env.WINDOWS_UTILITIES_PATH,

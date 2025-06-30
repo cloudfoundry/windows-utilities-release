@@ -12,9 +12,7 @@ You can create a `config.json` file, eg:
     "ca_cert": "<contents of your bosh director cert, with \n for newlines>",
     "client": "<bosh client name>",
     "client_secret": "<bosh client secret>",
-    "target": "<IP of your bosh director>",
-    "gw_private_key": "<contents of your bosh keypair private key, with \n for newlines>",
-    "gw_user": "<bosh gw user e.g. vcap or jumpbox>"
+    "target": "<IP of your bosh director>"
   },
   "stemcell_path": "<absolute path to stemcell tgz>",
   "windows_utilities_path": "<absolute path to windows utilities release tgz>",
@@ -26,7 +24,7 @@ You can create a `config.json` file, eg:
 }
 ```
 
-And then run these tests with `CONFIG_JSON=<path-to-config.json> ginkgo`.
+And then run these tests with `CONFIG_JSON=<path-to-config.json> ginkgo`.  If you need to establish an SSH tunnel to reach the director via a jumpbox, use `windows-utilities-release/ci/shared-scripts/setup-bosh-proxy.sh` before invoking `ginkgo`.
 
 Jobs should be developed in a test driven manner.  Writing tests for our test jobs is important because the feedback loop of running unit tests locally is much faster than the feedback loop we get from running the integration tests on a remote vm.  Jobs with unit tests can be tested by running `Invoke-Pester` in a job's directory on a windows machine.
 For example:  running `Invoke-Pester` in `windows-utilities-release/jobs/check_windowsdefender/templates/modules` runs the tests in `CheckWindowsDefender.Tests.ps1`

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"log"
-	"net/url"
 	"os"
 	"path/filepath"
 	"time"
@@ -13,7 +12,6 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gexec"
 )
 
 var (
@@ -35,7 +33,6 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	Expect(err).To(Succeed())
 
 	boshCertPath := writeCert(config.Bosh.CaCert)
-	boshGwPrivateKeyPath := writeCert(config.Bosh.GwPrivateKey)
 
 	timeout := BOSH_TIMEOUT
 	if s := os.Getenv("WUTS_BOSH_TIMEOUT"); s != "" {
@@ -49,7 +46,7 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	}
 	log.Printf("Using timeout (%s) for BOSH commands\n", timeout)
 
-	bosh = NewBoshCommand(config, boshCertPath, boshGwPrivateKeyPath, timeout)
+	bosh = NewBoshCommand(config, boshCertPath, timeout)
 
 	Expect(bosh.Run("login")).To(Succeed())
 
@@ -100,7 +97,6 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	Expect(err).To(Succeed())
 
 	boshCertPath := writeCert(config.Bosh.CaCert)
-	boshGwPrivateKeyPath := writeCert(config.Bosh.GwPrivateKey)
 
 	timeout := BOSH_TIMEOUT
 	if s := os.Getenv("WUTS_BOSH_TIMEOUT"); s != "" {
@@ -121,7 +117,7 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	stemcellInfo, err = fetchManifestInfo(matches[0], "stemcell.MF")
 	Expect(err).To(Succeed())
 
-	bosh = NewBoshCommand(config, boshCertPath, boshGwPrivateKeyPath, timeout)
+	bosh = NewBoshCommand(config, boshCertPath, timeout)
 })
 
 var _ = SynchronizedAfterSuite(func() {
@@ -230,22 +226,18 @@ var _ = Describe("Windows Utilities Release", func() {
 		})
 
 		It("enables and then disables SSH", func() {
-			directorURL, err := url.Parse(fmt.Sprintf("http://%s", bosh.DirectorIP))
-
-			Expect(err).NotTo(HaveOccurred())
-
-			err = bosh.Run(fmt.Sprintf("-d %s deploy %s", deploymentNameSSH, manifestPathSSH))
+			err := bosh.Run(fmt.Sprintf("-d %s deploy %s", deploymentNameSSH, manifestPathSSH))
 			Expect(err).To(Succeed())
 
 			// Try to ssh into windows cell
-			err = bosh.Run(fmt.Sprintf("-d %s ssh --opts=-T --command=exit check-ssh/0 --gw-user %s --gw-host %s --gw-private-key %s", deploymentNameSSH, bosh.GwUser, directorURL.Hostname(), bosh.GwPrivateKeyPath))
+			err = bosh.Run(fmt.Sprintf("-d %s ssh --opts=-T --command=exit check-ssh/0", deploymentNameSSH))
 			Expect(err).To(Succeed())
 
 			err = bosh.Run(fmt.Sprintf("-d %s deploy %s", deploymentNameSSH, manifestPathNoSSH))
 			Expect(err).To(Succeed())
 
 			// Try to ssh into windows cell
-			err = bosh.Run(fmt.Sprintf("-d %s ssh --opts=-T --command=exit check-ssh/0 --gw-user %s --gw-host %s --gw-private-key %s", deploymentNameSSH, bosh.GwUser, directorURL.Hostname(), bosh.GwPrivateKeyPath))
+			err = bosh.Run(fmt.Sprintf("-d %s ssh --opts=-T --command=exit check-ssh/0", deploymentNameSSH))
 			Expect(err).NotTo(Succeed())
 		})
 	})
@@ -283,27 +275,6 @@ var _ = Describe("Windows Utilities Release", func() {
 			Expect(bosh.Run(fmt.Sprintf("-d %s delete-deployment --force", deploymentNameRDP))).To(Succeed())
 			Expect(os.RemoveAll(manifestPathRDP)).To(Succeed())
 			Expect(os.RemoveAll(manifestPathNoRDP)).To(Succeed())
-		})
-
-		It("enables and then disables RDP", func() {
-			Skip("This test doesn't validate that RDP is enabled, and causes frequent failures")
-			Expect(bosh.Run(fmt.Sprintf("-d %s deploy %s", deploymentNameRDP, manifestPathRDP))).To(Succeed())
-
-			instanceIP, err := getFirstInstanceIP(deploymentNameRDP, instanceName)
-			Expect(err).NotTo(HaveOccurred())
-
-			enabledSession := config.doSSHLogin(instanceIP)
-			defer enabledSession.Kill()
-
-			Eventually(func() (*Session, error) {
-				rdpSession, err := runCommand("/bin/bash", "-c", "/usr/local/bin/rdp-sec-check.pl localhost")
-				Eventually(rdpSession, 30*time.Second).Should(Exit())
-
-				return rdpSession, err
-			}, 3*time.Minute).Should(Exit(0))
-
-			Expect(bosh.Run(fmt.Sprintf("-d %s deploy %s", deploymentNameRDP, manifestPathNoRDP))).To(Succeed())
-
 		})
 	})
 

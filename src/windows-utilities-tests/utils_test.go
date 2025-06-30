@@ -45,9 +45,6 @@ type Config struct {
 		Client       string `json:"client"`
 		ClientSecret string `json:"client_secret"`
 		Target       string `json:"target"`
-		SSHTunnelIP  string `json:"ssh_tunnel_ip"`
-		GwPrivateKey string `json:"gw_private_key"`
-		GwUser       string `json:"gw_user"`
 	} `json:"bosh"`
 	StemcellPath         string `json:"stemcell_path"`
 	WindowsUtilitiesPath string `json:"windows_utilities_path"`
@@ -181,24 +178,20 @@ func (c *Config) generateManifestWindowsDefenderChecker(deploymentName string) (
 }
 
 type BoshCommand struct {
-	DirectorIP       string
-	Client           string
-	ClientSecret     string
-	CertPath         string // Path to CA CERT file, if any
-	Timeout          time.Duration
-	GwPrivateKeyPath string // Path to key file
-	GwUser           string
+	DirectorIP   string
+	Client       string
+	ClientSecret string
+	CertPath     string // Path to CA CERT file, if any
+	Timeout      time.Duration
 }
 
-func NewBoshCommand(config *Config, CertPath string, GwPrivateKeyPath string, duration time.Duration) *BoshCommand {
+func NewBoshCommand(config *Config, CertPath string, duration time.Duration) *BoshCommand {
 	return &BoshCommand{
-		DirectorIP:       config.Bosh.Target,
-		Client:           config.Bosh.Client,
-		ClientSecret:     config.Bosh.ClientSecret,
-		CertPath:         CertPath,
-		Timeout:          duration,
-		GwPrivateKeyPath: GwPrivateKeyPath,
-		GwUser:           config.Bosh.GwUser,
+		DirectorIP:   config.Bosh.Target,
+		Client:       config.Bosh.Client,
+		ClientSecret: config.Bosh.ClientSecret,
+		CertPath:     CertPath,
+		Timeout:      duration,
 	}
 }
 
@@ -260,25 +253,6 @@ func (c *BoshCommand) RunInStdOut(command, dir string) ([]byte, error) {
 			strings.Join(cmd.Args, " "), exitCode, stderr, stdout)
 	}
 	return stdout, nil
-}
-
-func (config *Config) doSSHLogin(targetIP string) *Session {
-	sshTunnelAddress := strings.Split(config.Bosh.SSHTunnelIP, ":")[0]
-
-	session, err := runCommand("ssh",
-		"-nNT",
-		fmt.Sprintf("%s@%s", bosh.GwUser, sshTunnelAddress),
-		"-i",
-		bosh.GwPrivateKeyPath,
-		"-L",
-		fmt.Sprintf("3389:%s:3389", targetIP),
-		"-o",
-		"StrictHostKeyChecking=no",
-		"-o",
-		"ExitOnForwardFailure=yes")
-	Expect(err).NotTo(HaveOccurred())
-
-	return session
 }
 
 func runCommand(cmd string, args ...string) (*Session, error) {
