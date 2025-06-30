@@ -121,6 +121,7 @@ jobs:
         resource: gcp-2019-stemcell
       - get: bosh-integration-image
     - task: run-wuts
+      tags: [ broadcom ]
       file: windows-utilities-release/ci/tasks/run-wuts/task.yml
       image: bosh-integration-image
       params:
