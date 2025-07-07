@@ -35,4 +35,8 @@ jq -n \
   }' > $CONFIG_JSON
 
 echo "Running tests"
-go run github.com/onsi/ginkgo/v2/ginkgo -v -nodes "${NODES}"
+go run github.com/onsi/ginkgo/v2/ginkgo run -r -v \
+  --timeout="${GINKGO_TIMEOUT}" \
+  --nodes "${GINKGO_NODES}" \
+  --focus="${GINKGO_FOCUS}" \
+  --skip="${GINKGO_SKIP}" .
