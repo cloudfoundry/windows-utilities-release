@@ -240,6 +240,22 @@ var _ = Describe("Windows Utilities Release", func() {
 			err = bosh.Run(fmt.Sprintf("-d %s ssh --opts=-T --command=exit check-ssh/0", deploymentNameSSH))
 			Expect(err).NotTo(Succeed())
 		})
+
+		It("disables and then enables SSH", func() {
+			err := bosh.Run(fmt.Sprintf("-d %s deploy %s", deploymentNameSSH, manifestPathNoSSH))
+			Expect(err).To(Succeed())
+
+			// Try to ssh into windows cell
+			err = bosh.Run(fmt.Sprintf("-d %s ssh --opts=-T --command=exit check-ssh/0", deploymentNameSSH))
+			Expect(err).NotTo(Succeed())
+
+			err = bosh.Run(fmt.Sprintf("-d %s deploy %s", deploymentNameSSH, manifestPathSSH))
+			Expect(err).To(Succeed())
+
+			// Try to ssh into windows cell
+			err = bosh.Run(fmt.Sprintf("-d %s ssh --opts=-T --command=exit check-ssh/0", deploymentNameSSH))
+			Expect(err).To(Succeed())
+		})
 	})
 
 	Context("RDP", func() {

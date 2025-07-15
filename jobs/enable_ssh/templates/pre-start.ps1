@@ -19,6 +19,17 @@ if (-not $Enabled) {
     Exit 0
 }
 
+
+"Setting 'ssh-agent' service start type to automatic"
+Set-Service -Name ssh-agent -StartupType Automatic
+
+"Setting 'sshd' service start type to automatic"
+Set-Service -Name sshd -StartupType Automatic
+
+"Starting 'ssh-agent' service"
+Start-Service -Name ssh-agent
+
+
 "Starting 'sshd' service"
 Start-Service -Name sshd
 
