@@ -27,8 +27,9 @@ resources:
   source:
     bucket: all-bosh-windows
     key: versions/windows-utilities-release
-    access_key_id: ((bosh_windows_ci_aws_access_key.username))
-    secret_access_key: ((bosh_windows_ci_aws_access_key.password))
+    access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
+    secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
+    assume_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
     initial_version: 0.9.0
 
 - name: gcp-2019-stemcell
@@ -213,8 +214,9 @@ jobs:
         ---
         blobstore:
           options:
-            access_key_id: ((bosh_windows_ci_aws_access_key.username))
-            secret_access_key: ((bosh_windows_ci_aws_access_key.password))
+            access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
+            secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
+            assume_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
   - put: windows-utilities-release
     params:
       repository: release_repo
