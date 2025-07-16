@@ -8,3 +8,6 @@ properties:
   check_ssh.expected:
     description: "the expected value if ssh is enabled"
     default: true
+  check_ssh.firewall_rule_name:
+    description: "the SSH firewall rule name"
+    default: "sshd"

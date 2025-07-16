@@ -124,13 +124,15 @@ func (c *Config) generateDefaultManifest(deploymentName string) (string, error) 
 
 type SSHManifestProperties struct {
 	ManifestProperties
-	SSHEnabled bool
+	SSHEnabled       bool
+	FirewallRuleName string
 }
 
 func (c *Config) generateManifestSSH(deploymentName string, enabled bool) (string, error) {
 	manifestProperties := SSHManifestProperties{
 		ManifestProperties: c.newManifestProperties(deploymentName),
 		SSHEnabled:         enabled,
+		FirewallRuleName:   "OpenSSH-Server-In-TCP",
 	}
 	return c.generateManifestFile(manifestProperties, SSHTemplate)
 }

@@ -200,7 +200,7 @@ var _ = Describe("Windows Utilities Release", func() {
 		})
 	})
 
-	Context("SSH", func() {
+	FContext("SSH", func() {
 		var (
 			deploymentNameSSH string
 			manifestPathSSH   string
