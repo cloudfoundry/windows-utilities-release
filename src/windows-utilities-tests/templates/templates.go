@@ -153,7 +153,7 @@ instance_groups:
     properties:
       check_ssh:
         expected: {{.SSHEnabled}}
-		firewall_rule_name: {{ .FirewallRuleName }}
+        firewall_rule_name: {{ .FirewallRuleName }}
 `
 
 const RDPTemplate = `
