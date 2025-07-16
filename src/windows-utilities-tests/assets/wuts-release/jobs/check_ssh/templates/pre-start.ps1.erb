@@ -1,5 +1,7 @@
 ﻿$SSHDir = "C:\Program Files\OpenSSH"
 $Expected = [bool]$<%= p("check_ssh.expected") %>
+$FirewallRuleName = $<%= p("check_ssh.firewall_rule_name") %>
+
 Write-Host "Running Test..."
 
 $CheckSshState = [PSCustomObject]@{
@@ -23,7 +25,7 @@ function SSH-Enabled {
        return $CheckSshState.Error
   }
 
-  $daemon = Get-Service | Where { $_.Name -eq 'sshd' }
+  $daemon = Get-Service | Where { $_.Name -eq $FirewallRuleName }
   if ($daemon -eq $null) {
        Write-Error "sshd service not installed"
        return $CheckSshState.Error
