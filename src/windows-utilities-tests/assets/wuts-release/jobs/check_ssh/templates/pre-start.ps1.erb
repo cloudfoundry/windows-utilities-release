@@ -33,7 +33,7 @@ function SSH-Enabled {
   # Can't check LGPO - only verify that script ran without error
 
   # Check firewall
-  $firewallSet = ((Get-NetFirewallRule | where { $_.DisplayName -eq $FirewallRuleName }) -Ne $null)
+  $firewallSet = ((Get-NetFirewallRule | where { $_.Name -eq $FirewallRuleName }) -Ne $null)
 
   Write-Host "Firewall Set: ${firewallSet}"
   Write-Host "Agent Status: $($agent.Status.ToString())"
