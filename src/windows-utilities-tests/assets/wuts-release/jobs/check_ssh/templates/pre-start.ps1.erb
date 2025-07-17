@@ -1,6 +1,6 @@
 ﻿$SSHDir = "C:\Program Files\OpenSSH"
 $Expected = [bool]$<%= p("check_ssh.expected") %>
-$FirewallRuleName = $<%= p("check_ssh.firewall_rule_name") %>
+$FirewallRuleName = [string]"<%= p("check_ssh.firewall_rule_name") %>"
 
 Write-Host "Running Test..."
 
