@@ -19,6 +19,25 @@ if (-not $Enabled) {
     Exit 0
 }
 
+# Do this to prevent Get-Service from error'ing
+$sshd=(Get-Service | where { $_.Name -eq "sshd" })
+if ($sshd -eq $null) {
+    Write-Error "Error: sshd service is not installed"
+    Exit 1
+}
+if ($sshd.Status -eq "Running") {
+    "sshd service is already running, nothing to do here"
+    Exit 0
+}
+
+# Create firewall rule if it doesn't exist
+if (!(Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue | Select-Object Name, Enabled)) {
+    Write-Output "Firewall Rule 'OpenSSH-Server-In-TCP' does not exist, creating it..."
+    New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+} else {
+    Write-Output "Firewall rule 'OpenSSH-Server-In-TCP' already exists."
+}
+
 
 "Setting 'ssh-agent' service start type to automatic"
 Set-Service -Name ssh-agent -StartupType Automatic
