@@ -12,3 +12,6 @@ properties:
   enable_ssh.enabled:
     description: "If false this job will do nothing"
     default: true
+  enable_ssh.firewall_rule_name:
+    description: "the SSH firewall rule name"
+    default: "SSH"

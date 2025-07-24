@@ -148,6 +148,7 @@ instance_groups:
     properties:
       enable_ssh:
         enabled: {{.SSHEnabled}}
+        firewall_rule_name: {{ .FirewallRuleName }}
   - name: check_ssh
     release: {{.ReleaseName}}
     properties:
