@@ -46,15 +46,16 @@ type Config struct {
 		ClientSecret string `json:"client_secret"`
 		Target       string `json:"target"`
 	} `json:"bosh"`
-	StemcellPath         string `json:"stemcell_path"`
-	WindowsUtilitiesPath string `json:"windows_utilities_path"`
-	StemcellOS           string `json:"stemcell_os"`
-	Az                   string `json:"az"`
-	VmType               string `json:"vm_type"`
-	VmExtensions         string `json:"vm_extensions"`
-	Network              string `json:"network"`
-	SkipCleanup          bool   `json:"skip_cleanup"`
-	SkipCleanupOnRDPFail bool   `json:"skip_cleanup_on_rdp_fail"`
+	StemcellPath               string `json:"stemcell_path"`
+	WindowsUtilitiesPath       string `json:"windows_utilities_path"`
+	StemcellOS                 string `json:"stemcell_os"`
+	Az                         string `json:"az"`
+	VmType                     string `json:"vm_type"`
+	VmExtensions               string `json:"vm_extensions"`
+	Network                    string `json:"network"`
+	WindowsSSHFirewallRuleName string `json:"windows_ssh_firewall_rule_name"`
+	SkipCleanup                bool   `json:"skip_cleanup"`
+	SkipCleanupOnRDPFail       bool   `json:"skip_cleanup_on_rdp_fail"`
 }
 
 func NewConfig() (*Config, error) {
@@ -132,7 +133,7 @@ func (c *Config) generateManifestSSH(deploymentName string, enabled bool) (strin
 	manifestProperties := SSHManifestProperties{
 		ManifestProperties: c.newManifestProperties(deploymentName),
 		SSHEnabled:         enabled,
-		FirewallRuleName:   "OpenSSH-Server-In-TCP",
+		FirewallRuleName:   c.WindowsSSHFirewallRuleName,
 	}
 	return c.generateManifestFile(manifestProperties, SSHTemplate)
 }
