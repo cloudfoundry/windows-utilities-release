@@ -30,7 +30,7 @@ function Disable-SSH {
 
     # repair firewall
 
-    $rule = (Get-NetFirewallRule | where { $_.DisplayName -eq $FirewallRuleName })
+    $rule = (Get-NetFirewallRule | where { $_.DisplayName -eq $FirewallRuleName -or $_.Name -eq $FirewallRuleName })
     if ($rule -ne $null) {
         "Removing firewall rule: SSH"
         $rule | Remove-NetFirewallRule
