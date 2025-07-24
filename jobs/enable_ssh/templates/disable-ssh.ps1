@@ -1,3 +1,5 @@
+$FirewallRuleName = [string]"<%= p("enable_ssh.firewall_rule_name") %>"
+
 function Disable-SSH {
     # Do this to prevent Get-Service from error'ing
     $sshd=(Get-Service | where { $_.Name -eq 'sshd' })
@@ -28,7 +30,7 @@ function Disable-SSH {
 
     # repair firewall
 
-    $rule = (Get-NetFirewallRule | where { $_.DisplayName -eq 'SSH' })
+    $rule = (Get-NetFirewallRule | where { $_.DisplayName -eq $FirewallRuleName })
     if ($rule -ne $null) {
         "Removing firewall rule: SSH"
         $rule | Remove-NetFirewallRule

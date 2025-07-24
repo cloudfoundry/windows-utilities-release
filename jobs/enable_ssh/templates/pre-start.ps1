@@ -1,4 +1,5 @@
 ﻿$Enabled=[bool]$<%= p("enable_ssh.enabled") %>
+$FirewallRuleName = [string]"<%= p("enable_ssh.firewall_rule_name") %>"
 
 Start-Sleep 5
 
@@ -31,13 +32,27 @@ if ($sshd.Status -eq "Running") {
 }
 
 # Create firewall rule if it doesn't exist
-if (!(Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue | Select-Object Name, Enabled)) {
-    Write-Output "Firewall Rule 'OpenSSH-Server-In-TCP' does not exist, creating it..."
-    New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
-} else {
-    Write-Output "Firewall rule 'OpenSSH-Server-In-TCP' already exists."
-}
+if ($FirewallRuleName -eq "SSH") {
 
+    if ((Get-NetFirewallRule | where { $_.DisplayName -eq 'SSH' }) -eq $null) {
+        "Creating firewall rule for SSH"
+        New-NetFirewallRule -Protocol TCP -LocalPort 22 -Direction Inbound -Action Allow -DisplayName SSH
+    } else {
+        "Firewall rule for SSH already exists"
+    }
+
+} elseif ($FirewallRuleName -eq "OpenSSH-Server-In-TCP") {
+
+    if (!(Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue | Select-Object Name, Enabled)) {
+        Write-Output "Firewall Rule 'OpenSSH-Server-In-TCP' does not exist, creating it..."
+        New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+    } else {
+        Write-Output "Firewall rule 'OpenSSH-Server-In-TCP' already exists."
+    }
+
+} else {
+    Write "Warning: unrecognized firewall rule name $FirewallRuleName; ignoring..."
+}
 
 "Setting 'ssh-agent' service start type to automatic"
 Set-Service -Name ssh-agent -StartupType Automatic
