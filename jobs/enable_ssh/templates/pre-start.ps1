@@ -22,6 +22,33 @@ if (-not $Enabled) {
 
 Write "Firewall rule is: ${FirewallRuleName}"
 
+$LGPOPath = "C:\Windows\LGPO.exe"
+$InfFileContents= @'
+[Unicode]
+Unicode=yes
+[Version]
+signature=$CHICAGO$
+Revision=1
+[Registry Values]
+[System Access]
+[Privilege Rights]
+SeDenyNetworkLogonRight=*S-1-5-32-546
+SeAssignPrimaryTokenPrivilege=*S-1-5-19,*S-1-5-20,*S-1-5-80-3847866527-469524349-687026318-516638107-1125189541
+'@
+
+if (Test-Path $LGPOPath) {
+    $InfFilePath = "C:\Windows\Temp\enable-ssh.inf"
+    "Found $LGPOPath. Modifying security policies to support ssh."
+    Out-File -FilePath $InfFilePath -Encoding unicode -InputObject $InfFileContents -Force
+    & $LGPOPath /s $InfFilePath
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "LGPO.exe exited with non-zero code: ${LASTEXITCODE }"
+        Exit $LASTEXITCODE
+    }
+} else {
+    "Did not find $LGPOPath. Assuming existing security policies are sufficient to support ssh."
+}
+
 # Create firewall rule if it doesn't exist
 if ($FirewallRuleName -eq "SSH") {
 
