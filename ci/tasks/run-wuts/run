@@ -37,7 +37,7 @@ jq -n \
     "vm_type": env.VM_TYPE,
     "vm_extensions": env.VM_EXTENSIONS,
     "network": env.NETWORK,
-    "skip_cleanup": env.SKIP_CLEANUP,
+    "skip_cleanup": (env.SKIP_CLEANUP == "true"),
     "skip_cleanup_on_rdp_fail": false,
     "windows_ssh_firewall_rule_name": env.WINDOWS_SSH_FIREWALL_RULE_NAME
   }' > $CONFIG_JSON
