@@ -17,6 +17,11 @@ export STEMCELL_PATH="$(ls ${ROOT_DIR}/stemcell/*.tgz)"
 export WINDOWS_UTILITIES_PATH="${ROOT_DIR}/windows-utilities-release"
 export STEMCELL_OS="${STEMCELL_OS:-windows2019}"
 export WINDOWS_SSH_FIREWALL_RULE_NAME="${WINDOWS_SSH_FIREWALL_RULE_NAME:-SSH}"
+export SKIP_CLEANUP="${SKIP_CLEANUP:-false}"
+if [ "$SKIP_CLEANUP" != "true" ] ; then
+  export SKIP_CLEANUP="false"
+fi
+
 jq -n \
   '{
     "bosh": {
@@ -32,6 +37,7 @@ jq -n \
     "vm_type": env.VM_TYPE,
     "vm_extensions": env.VM_EXTENSIONS,
     "network": env.NETWORK,
+    "skip_cleanup": env.SKIP_CLEANUP,
     "skip_cleanup_on_rdp_fail": false,
     "windows_ssh_firewall_rule_name": env.WINDOWS_SSH_FIREWALL_RULE_NAME
   }' > $CONFIG_JSON
