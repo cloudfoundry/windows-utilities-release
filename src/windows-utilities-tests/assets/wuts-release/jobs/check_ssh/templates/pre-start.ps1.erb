@@ -1,5 +1,4 @@
-﻿$SSHDir = "C:\ProgramData\ssh"
-$Expected = [bool]$<%= p("check_ssh.expected") %>
+﻿$Expected = [bool]$<%= p("check_ssh.expected") %>
 $FirewallRuleName = [string]"<%= p("check_ssh.firewall_rule_name") %>"
 
 Write-Host "Running Test..."
@@ -98,24 +97,6 @@ If ($Actual -Ne $ExpectedSshEnabledState) {
   Write-Host "Expected SSH enabled to be $($Expected.ToString())"
   Exit 1
 }
-
-function Test-Key {
-  param (
-    $name=$1
-  )
-  $key=Join-Path $SSHDir $name
-  echo $key
-  if (Test-Path $key) {
-    Write-Error "Private Key: '${key}' Has Not Been Removed"
-    Exit 1
-  }
-}
-
-# Ensure ssh private keys have been deleted
-Test-Key 'ssh_host_dsa_key'
-Test-Key 'ssh_host_rsa_key'
-Test-Key 'ssh_host_ecdsa_key'
-Test-Key 'ssh_host_ed25519_key'
 
 Write-Host "SUCCESS"
 Exit 0

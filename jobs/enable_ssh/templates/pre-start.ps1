@@ -92,54 +92,6 @@ Set-Service -Name sshd -StartupType Automatic
 "Starting 'ssh-agent' service"
 Start-Service -Name ssh-agent
 
-# Regenerate host keys, add ssh keys to ssh-agent, and remove host key files.
-
-# Check for OpenSSH installation directory
-$SSHDir = $null
-if (Test-Path "C:\Program Files\OpenSSH") {
-    $SSHDir = "C:\Program Files\OpenSSH"
-} elseif (Test-Path "C:\Windows\System32\OpenSSH") {
-    $SSHDir = "C:\Windows\System32\OpenSSH"
-}
-
-if ($SSHDir) {
-    "Using OpenSSH from: $SSHDir"
-    Push-Location $SSHDir
-        New-Item -ItemType Directory -Path "$env:ProgramData\ssh" -ErrorAction Ignore
-
-        "Removing any existing host keys"
-        Remove-Item -Path "$env:ProgramData\ssh\ssh_host_*" -ErrorAction SilentlyContinue
-
-        "Generating new host keys"
-        .\ssh-keygen -A
-
-        # Only run FixHostFilePermissions.ps1 if it exists
-        $fixPermissionsScript = Join-Path $SSHDir "FixHostFilePermissions.ps1"
-        if (Test-Path $fixPermissionsScript) {
-            "Fixing host key permissions"
-            .\FixHostFilePermissions.ps1 -Confirm:$false
-        } else {
-            "FixHostFilePermissions.ps1 not found, skipping permission fix"
-        }
-
-        "Adding ssh keys to ssh-agent"
-        Get-ChildItem $env:ProgramData\ssh\ssh_host_*_key | % {
-            "Adding $_.Name to ssh-agent"
-            .\ssh-add $_.FullName
-
-            "Removing $_.Name from folder"
-            Remove-Item $_.FullName
-        }
-
-        "Listing ssh keys"
-        .\ssh-add -L
-    Pop-Location
-} else {
-    Write-Error "OpenSSH installation not found"
-    Exit 1
-}
-
-
 "Starting 'sshd' service"
 Start-Service -Name sshd
 
