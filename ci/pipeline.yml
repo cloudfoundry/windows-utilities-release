@@ -201,6 +201,7 @@ jobs:
       params:
         bump: minor
     - get: bosh-shared-ci
+    - get: bosh-integration-image
   - task: finalize-release
     file: bosh-shared-ci/tasks/release/create-final-release.yml
     image: bosh-integration-image
