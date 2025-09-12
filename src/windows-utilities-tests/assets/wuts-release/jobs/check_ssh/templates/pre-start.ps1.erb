@@ -1,5 +1,6 @@
-﻿$SSHDir = "C:\Program Files\OpenSSH"
-$Expected = [bool]$<%= p("check_ssh.expected") %>
+﻿$Expected = [bool]$<%= p("check_ssh.expected") %>
+$FirewallRuleName = [string]"<%= p("check_ssh.firewall_rule_name") %>"
+
 Write-Host "Running Test..."
 
 $CheckSshState = [PSCustomObject]@{
@@ -31,7 +32,7 @@ function SSH-Enabled {
   # Can't check LGPO - only verify that script ran without error
 
   # Check firewall
-  $firewallSet = ((Get-NetFirewallRule | where { $_.DisplayName -eq 'SSH' }) -Ne $null)
+  $firewallSet = ((Get-NetFirewallRule | where { $_.Name -eq $FirewallRuleName -or $_.DisplayName -eq $FirewallRuleName }) -Ne $null)
 
   Write-Host "Firewall Set: ${firewallSet}"
   Write-Host "Agent Status: $($agent.Status.ToString())"
@@ -96,24 +97,6 @@ If ($Actual -Ne $ExpectedSshEnabledState) {
   Write-Host "Expected SSH enabled to be $($Expected.ToString())"
   Exit 1
 }
-
-function Test-Key {
-  param (
-    $name=$1
-  )
-  $key=Join-Path $SSHDir $name
-  echo $key
-  if (Test-Path $key) {
-    Write-Error "Private Key: '${key}' Has Not Been Removed"
-    Exit 1
-  }
-}
-
-# Ensure ssh private keys have been deleted
-Test-Key 'ssh_host_dsa_key'
-Test-Key 'ssh_host_rsa_key'
-Test-Key 'ssh_host_ecdsa_key'
-Test-Key 'ssh_host_ed25519_key'
 
 Write-Host "SUCCESS"
 Exit 0

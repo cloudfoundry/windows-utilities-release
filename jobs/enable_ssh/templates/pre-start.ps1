@@ -1,4 +1,5 @@
 ﻿$Enabled=[bool]$<%= p("enable_ssh.enabled") %>
+$FirewallRuleName = [string]"<%= p("enable_ssh.firewall_rule_name") %>"
 
 Start-Sleep 5
 
@@ -19,11 +20,10 @@ if (-not $Enabled) {
     Exit 0
 }
 
-$SSHDir="C:\Program Files\OpenSSH"
-$InfFilePath="C:\Windows\Temp\enable-ssh.inf"
-$LGPOPath="C:\Windows\LGPO.exe"
+Write "Firewall rule is: ${FirewallRuleName}"
 
-$InfFileContents=@'
+$LGPOPath = "C:\Windows\LGPO.exe"
+$InfFileContents= @'
 [Unicode]
 Unicode=yes
 [Version]
@@ -36,9 +36,40 @@ SeDenyNetworkLogonRight=*S-1-5-32-546
 SeAssignPrimaryTokenPrivilege=*S-1-5-19,*S-1-5-20,*S-1-5-80-3847866527-469524349-687026318-516638107-1125189541
 '@
 
-if (-Not (Test-Path $SSHDir)) {
-    Write-Error "OpenSSH does not appear to be installed: missing directory: $SSHDir"
-    Exit 1
+if (Test-Path $LGPOPath) {
+    $InfFilePath = "C:\Windows\Temp\enable-ssh.inf"
+    "Found $LGPOPath. Modifying security policies to support ssh."
+    Out-File -FilePath $InfFilePath -Encoding unicode -InputObject $InfFileContents -Force
+    & $LGPOPath /s $InfFilePath
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "LGPO.exe exited with non-zero code: ${LASTEXITCODE }"
+        Exit $LASTEXITCODE
+    }
+} else {
+    "Did not find $LGPOPath. Assuming existing security policies are sufficient to support ssh."
+}
+
+# Create firewall rule if it doesn't exist
+if ($FirewallRuleName -eq "SSH") {
+
+    if ((Get-NetFirewallRule | where { $_.DisplayName -eq 'SSH' }) -eq $null) {
+        Write-Output "Creating firewall rule for SSH"
+        New-NetFirewallRule -Protocol TCP -LocalPort 22 -Direction Inbound -Action Allow -DisplayName SSH
+    } else {
+        Write-Output "Firewall rule for SSH already exists"
+    }
+
+} elseif ($FirewallRuleName -eq "OpenSSH-Server-In-TCP") {
+
+    if (!(Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue | Select-Object Name, Enabled)) {
+        Write-Output "Firewall Rule 'OpenSSH-Server-In-TCP' does not exist, creating it..."
+        New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -Profile Any -LocalPort 22
+    } else {
+        Write-Output "Firewall rule 'OpenSSH-Server-In-TCP' already exists."
+    }
+
+} else {
+    Write "Warning: unrecognized firewall rule name $FirewallRuleName; ignoring..."
 }
 
 # Do this to prevent Get-Service from error'ing
@@ -52,25 +83,6 @@ if ($sshd.Status -eq "Running") {
     Exit 0
 }
 
-if ((Get-NetFirewallRule | where { $_.DisplayName -eq 'SSH' }) -eq $null) {
-    "Creating firewall rule for SSH"
-    New-NetFirewallRule -Protocol TCP -LocalPort 22 -Direction Inbound -Action Allow -DisplayName SSH
-} else {
-    "Firewall rule for SSH already exists"
-}
-
-if (Test-Path $LGPOPath) {
-    "Found $LGPOPath. Modifying security policies to support ssh."
-    Out-File -FilePath $InfFilePath -Encoding unicode -InputObject $InfFileContents -Force
-    & $LGPOPath /s $InfFilePath
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "LGPO.exe exited with non-zero code: ${LASTEXITCODE}"
-        Exit $LASTEXITCODE
-    }
-} else {
-    "Did not find $LGPOPath. Assuming existing security policies are sufficient to support ssh."
-}
-
 "Setting 'ssh-agent' service start type to automatic"
 Set-Service -Name ssh-agent -StartupType Automatic
 
@@ -79,33 +91,6 @@ Set-Service -Name sshd -StartupType Automatic
 
 "Starting 'ssh-agent' service"
 Start-Service -Name ssh-agent
-
-
-"Successfully started 'ssh-agent' and 'sshd' services"
-Push-Location $SSHDir
-    New-Item -ItemType Directory -Path "$env:ProgramData\ssh" -ErrorAction Ignore
-
-    "Removing any existing host keys"
-    Remove-Item -Path "$env:ProgramData\ssh\ssh_host_*"
-
-    "Generating new host keys"
-    .\ssh-keygen -A
-
-    "Fixing host key permissions"
-    .\FixHostFilePermissions.ps1 -Confirm:$false
-
-    "Adding ssh keys to ssh-agent"
-    Get-ChildItem $env:ProgramData\ssh\ssh_host_*_key | % {
-        "Adding $_.Name to ssh-agent"
-        .\ssh-add $_.FullName
-
-        "Removing $_.Name from folder"
-        Remove-Item $_.FullName
-    }
-
-    "listing ssh keys"
-    .\ssh-add -L
-Pop-Location
 
 "Starting 'sshd' service"
 Start-Service -Name sshd
