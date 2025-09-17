@@ -3,8 +3,9 @@ resources:
   type: git
   source:
     branch: master
-    uri: git@github.com:cloudfoundry/windows-utilities-release.git
-    private_key: ((github_deploy_key_windows-utilities-release.private_key))
+    uri: https://github.com/cloudfoundry/windows-utilities-release.git
+    username: bosh-admin-bot
+    password: ((github_public_repo_token))
 
 - name: golang-release
   type: git
@@ -201,6 +202,7 @@ jobs:
       params:
         bump: minor
     - get: bosh-shared-ci
+    - get: bosh-integration-image
   - task: finalize-release
     file: bosh-shared-ci/tasks/release/create-final-release.yml
     image: bosh-integration-image
