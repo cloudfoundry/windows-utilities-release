@@ -3,10 +3,7 @@ package wuts_test
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -17,14 +14,13 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 	"gopkg.in/yaml.v2"
 
 	. "github.com/cloudfoundry/windows-utilities-release/windows-utilities-tests/templates"
 )
 
-const BOSH_TIMEOUT = 90 * time.Minute
+const BoshTimeout = 90 * time.Minute
 
 type ManifestProperties struct {
 	DeploymentName  string
@@ -63,7 +59,7 @@ func NewConfig() (*Config, error) {
 	if configFilePath == "" {
 		return nil, fmt.Errorf("invalid config file path: %v", configFilePath)
 	}
-	body, err := ioutil.ReadFile(configFilePath)
+	body, err := os.ReadFile(configFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("empty config file path: %v", configFilePath)
 	}
@@ -76,8 +72,8 @@ func NewConfig() (*Config, error) {
 }
 
 func (c *Config) newManifestProperties(deploymentName string) ManifestProperties {
-	log.Println("BeforeSuite: releaseVersion =", releaseVersion)
-	log.Println("BeforeSuite: winUtilRelVersion =", winUtilRelVersion)
+	By(fmt.Sprintf("BeforeSuite: releaseVersion =%s", releaseVersion))
+	By(fmt.Sprintf("BeforeSuite: winUtilRelVersion =%s", winUtilRelVersion))
 	return ManifestProperties{
 		DeploymentName:  deploymentName,
 		ReleaseName:     "wuts-release",
@@ -93,24 +89,24 @@ func (c *Config) newManifestProperties(deploymentName string) ManifestProperties
 }
 
 func (*Config) generateManifestFile(manifestProperties interface{}, manifestTemplate string) (string, error) {
-	templ, err := template.New("").Parse(manifestTemplate)
+	parsedManifestTemplate, err := template.New("").Parse(manifestTemplate)
 	if err != nil {
 		return "", err
 	}
 
 	var buf bytes.Buffer
-	err = templ.Execute(&buf, manifestProperties)
+	err = parsedManifestTemplate.Execute(&buf, manifestProperties)
 	if err != nil {
 		return "", err
 	}
 
-	manifestFile, err := ioutil.TempFile("", "")
+	manifestFile, err := os.CreateTemp("", "")
 	if err != nil {
 		return "", err
 	}
 
 	manifest := buf.Bytes()
-	log.Print("\nManifest: " + string(manifest[:]) + "\n")
+	By(fmt.Sprintf("\nManifest: %s\n", string(manifest[:])))
 	_, err = manifestFile.Write(manifest)
 	if err != nil {
 		return "", err
@@ -209,7 +205,7 @@ func (c *BoshCommand) args(command string) []string {
 
 func (c *BoshCommand) Run(command string) error {
 	cmd := exec.Command("bosh", c.args(command)...)
-	log.Printf("\nRUNNING %q\n", strings.Join(cmd.Args, " "))
+	By(fmt.Sprintf("\nRUNNING %q\n", strings.Join(cmd.Args, " ")))
 
 	session, err := Start(cmd, GinkgoWriter, GinkgoWriter)
 	if err != nil {
@@ -234,9 +230,9 @@ func (c *BoshCommand) RunInStdOut(command, dir string) ([]byte, error) {
 	cmd := exec.Command("bosh", c.args(command)...)
 	if dir != "" {
 		cmd.Dir = dir
-		log.Printf("\nRUNNING %q IN %q\n", strings.Join(cmd.Args, " "), dir)
+		By(fmt.Sprintf("\nRUNNING %q IN %q\n", strings.Join(cmd.Args, " "), dir))
 	} else {
-		log.Printf("\nRUNNING %q\n", strings.Join(cmd.Args, " "))
+		By(fmt.Sprintf("\nRUNNING %q\n", strings.Join(cmd.Args, " ")))
 	}
 
 	session, err := Start(cmd, GinkgoWriter, GinkgoWriter)
@@ -258,49 +254,14 @@ func (c *BoshCommand) RunInStdOut(command, dir string) ([]byte, error) {
 	return stdout, nil
 }
 
-func runCommand(cmd string, args ...string) (*Session, error) {
-	return Start(exec.Command(cmd, args...), GinkgoWriter, GinkgoWriter)
-}
-
-// noinspection GoUnusedFunction
-func downloadLogs(deploymentName string, jobName string, index int) *Buffer {
-	tempDir, err := ioutil.TempDir("", "")
-	Expect(err).To(Succeed())
-	defer os.RemoveAll(tempDir)
-
-	err = bosh.Run(fmt.Sprintf("-d %s logs %s/%d --dir %s", deploymentName, jobName, index, tempDir))
-	Expect(err).To(Succeed())
-
-	matches, err := filepath.Glob(filepath.Join(tempDir, fmt.Sprintf("%s.%s.%d-*.tgz", deploymentName, jobName, index)))
-	Expect(err).To(Succeed())
-	Expect(matches).To(HaveLen(1))
-
-	cmd := exec.Command("tar", "xf", matches[0], "-O", fmt.Sprintf("./%s/%s/job-service-wrapper.out.log", jobName, jobName))
-	session, err := Start(cmd, GinkgoWriter, GinkgoWriter)
-	Expect(err).To(Succeed())
-
-	return session.Wait().Out
-}
-
-type vmInfo struct {
-	Tables []struct {
-		Rows []struct {
-			Instance string `json:"instance"`
-			IPs      string `json:"ips"`
-		} `json:"Rows"`
-	} `json:"Tables"`
-}
-
 type ManifestInfo struct {
 	Version string `yaml:"version"`
 	Name    string `yaml:"name"`
 }
 
 func fetchManifestInfo(releasePath string, manifestFilename string) (ManifestInfo, error) {
-	var stemcellInfo ManifestInfo
-	tempDir, err := ioutil.TempDir("", "")
-	Expect(err).To(Succeed())
-	defer os.RemoveAll(tempDir)
+	var manifestInfo ManifestInfo
+	tempDir := GinkgoT().TempDir()
 
 	cmd := exec.Command("tar", "xf", releasePath, "-C", tempDir, manifestFilename)
 	session, err := Start(cmd, GinkgoWriter, GinkgoWriter)
@@ -314,24 +275,24 @@ func fetchManifestInfo(releasePath string, manifestFilename string) (ManifestInf
 			stderr = session.Err.Contents()
 		}
 		stdout := session.Out.Contents()
-		return stemcellInfo, fmt.Errorf("Non-zero exit code for cmd %q: %d\nSTDERR:\n%s\nSTDOUT:%s\n",
+		return manifestInfo, fmt.Errorf("Non-zero exit code for cmd %q: %d\nSTDERR:\n%s\nSTDOUT:%s\n",
 			strings.Join(cmd.Args, " "), exitCode, stderr, stdout)
 	}
 
-	stemcellMF, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", tempDir, manifestFilename))
+	stemcellMF, err := os.ReadFile(fmt.Sprintf("%s/%s", tempDir, manifestFilename))
 	Expect(err).To(Succeed())
 
-	err = yaml.Unmarshal(stemcellMF, &stemcellInfo)
+	err = yaml.Unmarshal(stemcellMF, &manifestInfo)
 	Expect(err).To(Succeed())
-	Expect(stemcellInfo.Version).ToNot(BeNil())
-	Expect(stemcellInfo.Version).ToNot(BeEmpty())
+	Expect(manifestInfo.Version).ToNot(BeNil())
+	Expect(manifestInfo.Version).ToNot(BeEmpty())
 
-	return stemcellInfo, nil
+	return manifestInfo, nil
 }
 
 func writeCert(cert string) string {
 	if cert != "" {
-		certFile, err := ioutil.TempFile("", "")
+		certFile, err := os.CreateTemp("", "")
 		Expect(err).To(Succeed())
 
 		_, err = certFile.Write([]byte(cert))
@@ -353,7 +314,7 @@ func createAndUploadRelease(releaseDir string) string {
 		absoluteFilePath = filepath.Join(pwd, releaseDir)
 	}
 	Expect(os.Chdir(absoluteFilePath)).To(Succeed())
-	defer os.Chdir(pwd)
+	defer os.Chdir(pwd) //nolint:errcheck
 
 	version := fmt.Sprintf("0.dev+%d", getTimestampInMs())
 
@@ -387,28 +348,4 @@ func generateSemiRandomWindowsPassword() string {
 	// ensure compliance with Windows password requirements
 	password = password + "Ab!"
 	return password
-}
-
-func getFirstInstanceIP(deployment string, instanceName string) (string, error) {
-	var vms vmInfo
-	stdout, err := bosh.RunInStdOut(fmt.Sprintf("vms -d %s --json", deployment), "")
-	if err != nil {
-		return "", err
-	}
-
-	if err = json.Unmarshal(stdout, &vms); err != nil {
-		return "", err
-	}
-
-	for _, row := range vms.Tables[0].Rows {
-		if strings.HasPrefix(row.Instance, instanceName) {
-			ips := strings.Split(row.IPs, "\n")
-			if len(ips) == 0 {
-				break
-			}
-			return ips[0], nil
-		}
-	}
-
-	return "", errors.New("No instance IPs found!")
 }

@@ -15,7 +15,7 @@ trap cleanup_ssh_tunnels RETURN
 
 (
   set -eu -o pipefail
-  cd "${ROOT_DIR}"
+  cd "${ROOT_DIR}/src/windows-utilities-tests/"
 
-  go run -mod=mod github.com/onsi/ginkgo/ginkgo run -r -v .
+  go run github.com/onsi/ginkgo/v2/ginkgo run -r -v .
 )
