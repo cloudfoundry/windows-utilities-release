@@ -3,7 +3,6 @@ package wuts_test
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -22,9 +21,13 @@ var (
 	winUtilRelVersion string
 )
 
-func init() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	log.SetOutput(GinkgoWriter)
+func buildDeploymentName(windowsVersion, baseName string) string {
+	return fmt.Sprintf(
+		"%s-%s-%s",
+		windowsVersion,
+		baseName,
+		time.Now().Format("2006-01-02T15h04s05"),
+	)
 }
 
 var _ = SynchronizedBeforeSuite(func() []byte {
@@ -34,17 +37,17 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 
 	boshCertPath := writeCert(config.Bosh.CaCert)
 
-	timeout := BOSH_TIMEOUT
+	timeout := BoshTimeout
 	if s := os.Getenv("WUTS_BOSH_TIMEOUT"); s != "" {
 		d, err := time.ParseDuration(s)
 		if err != nil {
-			log.Printf("Error parsing WUTS_BOSH_TIMEOUT (%s): %s - falling back to default\n", s, err)
+			By(fmt.Sprintf("Error parsing WUTS_BOSH_TIMEOUT (%s): %s - falling back to default\n", s, err))
 		} else {
-			log.Printf("Using WUTS_BOSH_TIMEOUT (%s) as timeout\n", s)
+			By(fmt.Sprintf("Using WUTS_BOSH_TIMEOUT (%s) as timeout\n", s))
 			timeout = d
 		}
 	}
-	log.Printf("Using timeout (%s) for BOSH commands\n", timeout)
+	By(fmt.Sprintf("Using timeout (%s) for BOSH commands\n", timeout))
 
 	bosh = NewBoshCommand(config, boshCertPath, timeout)
 
@@ -77,7 +80,7 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	// Azure doesn't create stemcell image until first deployment using that stemcell,
 	// which creates a race condition which breaks simultaneous deployments;
 	// to fix, we do an initial deployment to ensure image is there.
-	deploymentName := fmt.Sprintf("ensure-azure-stemcell-image-exists-%d", time.Now().UTC().UnixNano())
+	deploymentName := buildDeploymentName(config.StemcellOS, "ensure-azure-stemcell-image-exist")
 	manifestPath, err := config.generateDefaultManifest(deploymentName)
 	Expect(err).To(Succeed())
 
@@ -98,17 +101,17 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 
 	boshCertPath := writeCert(config.Bosh.CaCert)
 
-	timeout := BOSH_TIMEOUT
+	timeout := BoshTimeout
 	if s := os.Getenv("WUTS_BOSH_TIMEOUT"); s != "" {
 		d, err := time.ParseDuration(s)
 		if err != nil {
-			log.Printf("Error parsing WUTS_BOSH_TIMEOUT (%s): %s - falling back to default\n", s, err)
+			By(fmt.Sprintf("Error parsing WUTS_BOSH_TIMEOUT (%s): %s - falling back to default\n", s, err))
 		} else {
-			log.Printf("Using WUTS_BOSH_TIMEOUT (%s) as timeout\n", s)
+			By(fmt.Sprintf("Using WUTS_BOSH_TIMEOUT (%s) as timeout\n", s))
 			timeout = d
 		}
 	}
-	log.Printf("Using timeout (%s) for BOSH commands\n", timeout)
+	By(fmt.Sprintf("Using timeout (%s) for BOSH commands\n", timeout))
 
 	matches, err := filepath.Glob(config.StemcellPath)
 	Expect(err).To(Succeed())
@@ -126,7 +129,10 @@ var _ = SynchronizedAfterSuite(func() {
 		return
 	}
 
-	bosh.Run(fmt.Sprintf("delete-stemcell %s/%s", stemcellInfo.Name, stemcellInfo.Version))
+	err := bosh.Run(fmt.Sprintf("delete-stemcell %s/%s", stemcellInfo.Name, stemcellInfo.Version))
+	if err != nil {
+		By(fmt.Sprintf("Error running 'bosh delete-stemcell %s/%s': %s", stemcellInfo.Name, stemcellInfo.Version, err))
+	}
 	Expect(bosh.Run(fmt.Sprintf("delete-release wuts-release/%s", releaseVersion))).To(Succeed())
 	Expect(bosh.Run(fmt.Sprintf("delete-release windows-utilities/%s", winUtilRelVersion))).To(Succeed())
 })
@@ -285,7 +291,7 @@ var _ = Describe("Windows Utilities Release", func() {
 		})
 
 		AfterEach(func() {
-			if config.SkipCleanupOnRDPFail && CurrentGinkgoTestDescription().Failed {
+			if config.SkipCleanupOnRDPFail && CurrentSpecReport().Failed() {
 				return
 			}
 			Expect(bosh.Run(fmt.Sprintf("-d %s delete-deployment --force", deploymentNameRDP))).To(Succeed())
@@ -303,7 +309,7 @@ var _ = Describe("Windows Utilities Release", func() {
 		)
 
 		BeforeEach(func() {
-			id := fmt.Sprintf("%s", uuid.New())[0:8]
+			id := uuid.New().String()[0:8]
 			deploymentNameDefender = fmt.Sprintf("windows-utilities-test-defender-%s", id)
 		})
 
