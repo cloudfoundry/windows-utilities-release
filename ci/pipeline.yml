@@ -73,12 +73,14 @@ jobs:
           trigger: true
     - task: bump-deps
       file: golang-release/ci/tasks/shared/bump-deps.yml
+      tags: [ broadcom ]
       input_mapping:
         input_repo: windows-utilities-release
       output_mapping:
         output_repo: windows-utilities-release
       params:
         SOURCE_PATH: src/windows-utilities-tests
+        GOPROXY: https://((broadcom_artifactory_mirrors.username)):((broadcom_artifactory_mirrors.password))@((broadcom_artifactory_mirrors.golang)),off
     - task: build-test
       config:
         image_resource:
