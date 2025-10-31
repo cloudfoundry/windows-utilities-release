@@ -129,7 +129,7 @@ jobs:
       file: windows-utilities-release/ci/tasks/run-wuts/task.yml
       image: bosh-integration-image
       params:
-        AZ: az1
+        AZ: z1
         BOSH_CA_CERT: ((iaas_directors_labs-gcp-director_bosh_ca_cert.ca))
         BOSH_CLIENT: ((iaas_directors_labs-gcp-director_bosh_client.username))
         BOSH_CLIENT_SECRET: ((iaas_directors_labs-gcp-director_bosh_client.password))
