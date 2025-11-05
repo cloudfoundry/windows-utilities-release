@@ -80,7 +80,8 @@ jobs:
         output_repo: windows-utilities-release
       params:
         SOURCE_PATH: src/windows-utilities-tests
-        GOPROXY: https://((broadcom_artifactory_mirrors.username)):((broadcom_artifactory_mirrors.password))@((broadcom_artifactory_mirrors.golang)),off
+        GOPROXY: ((repository_mirrors.goproxy))
+        GOSUMDB: ((repository_mirrors.gosumdb))
     - task: build-test
       config:
         image_resource:
