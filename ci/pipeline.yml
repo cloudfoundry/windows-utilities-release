@@ -1,3 +1,7 @@
+---
+vars:
+  - &worker_tag_windows windows-nimbus
+
 resources:
 - name: windows-utilities-release
   type: git
@@ -110,10 +114,10 @@ jobs:
   - in_parallel:
     - task: check-windows-defender-tests
       file: windows-utilities-release/ci/tasks/test-check-windows-defender/task.yml
-      tags: [ windows-nimbus ]
+      tags: [*worker_tag_windows]
     - task: enable-windows-defender-tests
       file: windows-utilities-release/ci/tasks/test-enable-windows-defender/task.yml
-      tags: [ windows-nimbus ]
+      tags: [*worker_tag_windows]
 
 - name: run-wuts-gcp-2019
   serial: true
