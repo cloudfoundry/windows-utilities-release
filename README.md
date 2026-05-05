@@ -32,22 +32,6 @@ addons:
     - os: windows2012R2
 ```
 
-**Note:** The `set_password` job should not be used in conjunction with the `randomize_password` job.
-
-#### Randomizing each VM's password
-```yaml
-addons:
-- name: <some-name>
-  jobs:
-  - name: randomize_password
-    release: windows-utilities
-    properties:
-      randomize_password:
-        username: "SomeUser" # defaults to "Administrator"
-  include:
-    stemcell:
-    - os: windows2012R2
-```
 
 #### Enabling experimental BOSH SSH support on Windows
 ```yaml
