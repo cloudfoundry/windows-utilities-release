@@ -196,15 +196,20 @@ func NewBoshCommand(config *Config, CertPath string, duration time.Duration) *Bo
 
 func (c *BoshCommand) args(command string) []string {
 	args := strings.Split(command, " ")
-	args = append([]string{"-n", "-e", c.DirectorIP, "--client", c.Client, "--client-secret", c.ClientSecret}, args...)
+	args = append([]string{"-n", "-e", c.DirectorIP, "--client", c.Client}, args...)
 	if c.CertPath != "" {
 		args = append([]string{"--ca-cert", c.CertPath}, args...)
 	}
 	return args
 }
 
+func (c *BoshCommand) secretEnv() []string {
+	return append(os.Environ(), fmt.Sprintf("BOSH_CLIENT_SECRET=%s", c.ClientSecret))
+}
+
 func (c *BoshCommand) Run(command string) error {
 	cmd := exec.Command("bosh", c.args(command)...)
+	cmd.Env = c.secretEnv()
 	By(fmt.Sprintf("\nRUNNING %q\n", strings.Join(cmd.Args, " ")))
 
 	session, err := Start(cmd, GinkgoWriter, GinkgoWriter)
@@ -228,6 +233,7 @@ func (c *BoshCommand) Run(command string) error {
 
 func (c *BoshCommand) RunInStdOut(command, dir string) ([]byte, error) {
 	cmd := exec.Command("bosh", c.args(command)...)
+	cmd.Env = c.secretEnv()
 	if dir != "" {
 		cmd.Dir = dir
 		By(fmt.Sprintf("\nRUNNING %q IN %q\n", strings.Join(cmd.Args, " "), dir))
