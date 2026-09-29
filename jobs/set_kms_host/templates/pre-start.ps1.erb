@@ -1,10 +1,12 @@
 ﻿$ErrorActionPreference = "Stop"
 
-$KmsEnabled="<%= p("set_kms_host.enabled").to_s %>"
-$DesiredHost="<%= p("set_kms_host.host").to_s %>"
-$DesiredPort="<%= p("set_kms_host.port").to_s %>"
+<% require "base64" -%>
+$KmsEnabled=[bool]$<%= p("set_kms_host.enabled").to_s.downcase != "false" %>
+$EncodedHost='<%= Base64.strict_encode64(p("set_kms_host.host").to_s) %>'
+$DesiredHost=[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($EncodedHost))
+$DesiredPort=<%= Integer(p("set_kms_host.port").to_s, 10) %>
 
-If ($KmsEnabled.ToLower() -Eq "false") {
+If (-Not $KmsEnabled) {
   "set_kms_host.enabled equals false, nothing to do."
   Exit 0
 }
