@@ -20,12 +20,23 @@ $ExpectedDisabledProperties = @(
     "IntrusionPreventionSystem"
 )
 
+function Get-DefenderProperties {
+    $preferences = Get-MpPreference -ErrorAction Stop
+    $properties = @($preferences |
+            Select-Object -ExpandProperty CimInstanceProperties |
+            Where-Object { $_.Name -Like "Disable*" })
+
+    if ($properties.Count -eq 0) {
+        throw "Windows Defender preferences are unavailable"
+    }
+
+    return $properties
+}
+
 function Assert-DefenderEnabled {
     $enabled = $True
 
-    Get-MpPreference |
-            Select-Object -ExpandProperty CimInstanceProperties |
-            Where-Object { $_.Name -Like "Disable*" } |
+    Get-DefenderProperties |
             ForEach-Object {
                 $propertyName = $_.Name.Replace('Disable', '')
 
@@ -51,9 +62,7 @@ function Assert-DefenderDisabled {
     $disabled = $True
     $AllProperties = $ExpectedEnabledProperties + $ExpectedDisabledProperties
 
-    Get-MpPreference |
-            Select-Object -ExpandProperty CimInstanceProperties |
-            Where-Object { $_.Name -Like "Disable*" } |
+    Get-DefenderProperties |
             ForEach-Object {
                 $propertyName = $_.Name.Replace('Disable', '')
 

@@ -302,10 +302,8 @@ var _ = Describe("Windows Utilities Release", func() {
 
 	Context("Windows Defender", func() {
 		var (
-			deploymentNameDefender         string
-			manifestPathDefenderEnabled    string
-			manifestPathDefenderDisabled   string
-			manifestPathDefenderNotPresent string
+			deploymentNameDefender      string
+			manifestPathDefenderEnabled string
 		)
 
 		BeforeEach(func() {
@@ -322,23 +320,12 @@ var _ = Describe("Windows Utilities Release", func() {
 				err := os.RemoveAll(manifestPathDefenderEnabled)
 				Expect(err).NotTo(HaveOccurred())
 			}
-			if manifestPathDefenderDisabled != "" {
-				err := os.RemoveAll(manifestPathDefenderDisabled)
-				Expect(err).NotTo(HaveOccurred())
-			}
-			if manifestPathDefenderNotPresent != "" {
-				err := os.RemoveAll(manifestPathDefenderNotPresent)
-				Expect(err).NotTo(HaveOccurred())
-			}
 		})
 
-		It("enables and disables the appropriate features in Windows Defender", func() {
-			if config.StemcellOS == "windows2012R2" {
-				Skip("Windows Defender is not enabled in Windows 2012R2")
-			}
-
+		It("fails to enable Windows Defender on stemcells without Defender installed", func() {
+			// BOSH Windows stemcells deliberately remove Defender. Leftover PowerShell
+			// commands on some IaaSes do not mean that Defender is installed.
 			var err error
-
 			manifestPathDefenderEnabled, err = config.generateManifestWindowsDefender(
 				deploymentNameDefender,
 				true,
@@ -348,84 +335,7 @@ var _ = Describe("Windows Utilities Release", func() {
 			err = bosh.Run(
 				fmt.Sprintf("-d %s deploy %s", deploymentNameDefender, manifestPathDefenderEnabled),
 			)
-			Expect(err).NotTo(HaveOccurred())
-
-			err = bosh.Run(
-				fmt.Sprintf("-d %s run-errand check_windowsdefender", deploymentNameDefender),
-			)
-			Expect(err).NotTo(HaveOccurred())
-
-			manifestPathDefenderDisabled, err = config.generateManifestWindowsDefender(
-				deploymentNameDefender,
-				false,
-			)
-			Expect(err).NotTo(HaveOccurred())
-
-			err = bosh.Run(
-				fmt.Sprintf("-d %s deploy %s", deploymentNameDefender, manifestPathDefenderDisabled),
-			)
-			Expect(err).NotTo(HaveOccurred())
-
-			err = bosh.Run(
-				fmt.Sprintf("-d %s run-errand check_windowsdefender", deploymentNameDefender),
-			)
-			Expect(err).NotTo(HaveOccurred())
-		})
-
-		It("disables Windows Defender features when the enable_windowsdefender job is removed", func() {
-			if config.StemcellOS == "windows2012R2" {
-				Skip("Windows Defender is not enabled in Windows 2012R2")
-			}
-
-			var err error
-
-			manifestPathDefenderEnabled, err = config.generateManifestWindowsDefender(
-				deploymentNameDefender,
-				true,
-			)
-			Expect(err).NotTo(HaveOccurred())
-
-			err = bosh.Run(
-				fmt.Sprintf("-d %s deploy %s", deploymentNameDefender, manifestPathDefenderEnabled),
-			)
-			Expect(err).NotTo(HaveOccurred())
-
-			err = bosh.Run(
-				fmt.Sprintf("-d %s run-errand check_windowsdefender", deploymentNameDefender),
-			)
-			Expect(err).NotTo(HaveOccurred())
-
-			manifestPathDefenderNotPresent, err = config.generateManifestWindowsDefenderChecker(deploymentNameDefender)
-			Expect(err).NotTo(HaveOccurred())
-
-			err = bosh.Run(
-				fmt.Sprintf("-d %s deploy %s", deploymentNameDefender, manifestPathDefenderNotPresent),
-			)
-			Expect(err).NotTo(HaveOccurred())
-
-			err = bosh.Run(
-				fmt.Sprintf("-d %s run-errand check_windowsdefender", deploymentNameDefender),
-			)
-			Expect(err).NotTo(HaveOccurred())
-		})
-
-		It("fails to enable windows defender features when the stemcell doesn't include defender", func() {
-			if config.StemcellOS != "windows2012R2" {
-				Skip("Stemcells with Defender enabled aren't expected to fail to enable features")
-			}
-
-			var err error
-
-			manifestPathDefenderEnabled, err = config.generateManifestWindowsDefender(
-				deploymentNameDefender,
-				true,
-			)
-			Expect(err).NotTo(HaveOccurred())
-
-			err = bosh.Run(
-				fmt.Sprintf("-d %s deploy %s", deploymentNameDefender, manifestPathDefenderEnabled),
-			)
-			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Failed Jobs: enable_windowsdefender")))
 		})
 	})
 })

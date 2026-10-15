@@ -28,3 +28,10 @@ And then run these tests with `CONFIG_JSON=<path-to-config.json> ginkgo`.  If yo
 
 Jobs should be developed in a test driven manner.  Writing tests for our test jobs is important because the feedback loop of running unit tests locally is much faster than the feedback loop we get from running the integration tests on a remote vm.  Jobs with unit tests can be tested by running `Invoke-Pester` in a job's directory on a windows machine.
 For example:  running `Invoke-Pester` in `windows-utilities-release/jobs/check_windowsdefender/templates/modules` runs the tests in `CheckWindowsDefender.Tests.ps1`
+
+BOSH Windows stemcells deliberately uninstall Microsoft Defender. The integration
+suite checks that deploying `enable_windowsdefender` fails in pre-start on these
+stemcells, including images that retain Defender PowerShell commands after removal.
+Preference changes for systems with Defender installed are covered by the
+`WindowsDefenderManager` unit tests. The preference checker must fail when querying
+Defender fails or returns no properties.
