@@ -1,6 +1,7 @@
 Import-Module $PSScriptRoot/WindowsDefenderManager.psd1
 
 function Set-MpPreference() {
+    [CmdletBinding()]
     param(
         [bool]$DisableArchiveScanning,
         [bool]$DisableAutoExclusions,
@@ -54,6 +55,12 @@ Describe "Enable-WindowsDefenderFeatures" {
         }
     }
 
+    It "throws when the Defender WMI class is missing even though the command exists" {
+        Mock Set-MpPreference { Write-Error "Invalid class" } -ModuleName WindowsDefenderManager
+
+        { $ErrorActionPreference = "Continue"; Enable-WindowsDefenderFeatures } | Should Throw "Invalid class"
+    }
+
     It "throws when Set-MpPreference command doesn't exist" {
         Mock Get-Command { $false } -ModuleName WindowsDefenderManager
 
@@ -68,6 +75,12 @@ Describe "Enable-WindowsDefenderFeatures" {
 }
 
 Describe "Disable-WindowsDefenderFeatures" {
+    It "throws when the Defender WMI class is missing" {
+        Mock Set-MpPreference { Write-Error "Invalid class" } -ModuleName WindowsDefenderManager
+
+        { $ErrorActionPreference = "Continue"; Disable-WindowsDefenderFeatures } | Should Throw "Invalid class"
+    }
+
     It "sets the expected Windows Defender disable options to false" {
         $defenderSettings = @("DisableArchiveScanning", "DisableAutoExclusions", "DisableBehaviorMonitoring",
             "DisableBlockAtFirstSeen", "DisableIOAVProtection", "DisablePrivacyMode",

@@ -20,9 +20,9 @@ $FeaturesToDisable = $FeaturesToEnable + @(
 )
 
 function Enable-WindowsDefenderFeatures {
-    if (Get-Command -Name Set-MpPreference) {
+    if (Get-Command -Name Set-MpPreference -ErrorAction SilentlyContinue) {
         foreach ($feature in $FeaturesToEnable) {
-            iex "Set-MpPreference -$feature `$False"
+            iex "Set-MpPreference -$feature `$False -ErrorAction Stop"
         }
     } else {
         throw "Windows Defender is not installed on the current stemcell, the enable_windowsdefender job can only be deployed using stemcells with Defender installed"
@@ -31,6 +31,6 @@ function Enable-WindowsDefenderFeatures {
 
 function Disable-WindowsDefenderFeatures {
     foreach ($feature in $FeaturesToDisable) {
-        iex "Set-MpPreference -$feature `$True"
+        iex "Set-MpPreference -$feature `$True -ErrorAction Stop"
     }
 }

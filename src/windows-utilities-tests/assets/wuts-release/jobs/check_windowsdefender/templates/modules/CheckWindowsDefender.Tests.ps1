@@ -1,6 +1,9 @@
 Import-Module ./CheckWindowsDefender.psd1
 
-function Get-MpPreference {}
+function Get-MpPreference {
+    [CmdletBinding()]
+    param()
+}
 
 Describe "Assert-DefenderEnabled" {
     BeforeEach {
@@ -152,6 +155,34 @@ Describe "Assert-DefenderDisabled" {
         Assert-MockCalled Write-Log -Exactly 1 -Scope It -ModuleName CheckWindowsDefender -ParameterFilter {
             $Message -eq "Expected DisableIntrusionPreventionSystem to be disabled, it is enabled"
         }
+    }
+}
+
+Describe "Defender preference query failures" {
+    $assertions = @(
+        @{ Assertion = "Assert-DefenderEnabled" },
+        @{ Assertion = "Assert-DefenderDisabled" }
+    )
+
+    It "throws when <Assertion> cannot query the Defender WMI class" -TestCases $assertions {
+        param($Assertion)
+        Mock Get-MpPreference { Write-Error "Invalid class" } -ModuleName CheckWindowsDefender
+
+        { $ErrorActionPreference = "Continue"; & $Assertion } | Should Throw "Invalid class"
+    }
+
+    It "throws when <Assertion> receives no preferences" -TestCases $assertions {
+        param($Assertion)
+        Mock Get-MpPreference { return $null } -ModuleName CheckWindowsDefender
+
+        { & $Assertion } | Should Throw "Windows Defender preferences are unavailable"
+    }
+
+    It "throws when <Assertion> receives no Defender properties" -TestCases $assertions {
+        param($Assertion)
+        Mock Get-MpPreference { [PSCustomObject]@{ CimInstanceProperties = @() } } -ModuleName CheckWindowsDefender
+
+        { & $Assertion } | Should Throw "Windows Defender preferences are unavailable"
     }
 }
 
