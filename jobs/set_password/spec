@@ -3,6 +3,7 @@ name: set_password
 description: "Sets password for a user on Windows (defaults to Administrator)"
 templates:
   pre-start.ps1: bin/pre-start.ps1
+  account.ps1: bin/account.ps1
 
 packages: []
 

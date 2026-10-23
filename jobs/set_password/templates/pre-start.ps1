@@ -1,5 +1,5 @@
 ﻿$ErrorActionPreference = "Stop";
-trap { $host.SetShouldExit(1) }
+trap { [Console]::Error.WriteLine("Local account update failed: $($_.Exception.Message)"); Exit 1 }
 
 <% require "base64" %>
 
@@ -19,17 +19,12 @@ if ($Username -eq '') {
     throw "Error: empty user name - refusing to change password"
 }
 
-if ($Username -eq 'Administrator')  {
-    "Ensure user [$Username] is created"
-    net user $Username $NewPassword /add
-    "Ensure user is active"
-    net user $Username /active:yes
-    "Ensure user is an Admin"
-    net localgroup Administrators $Username /add
+if ($NewPassword -eq '') {
+    throw "Error: empty password - refusing to change password"
 }
 
-"Setting password for user: $Username"
-net user $Username $NewPassword
+. "$PSScriptRoot\account.ps1"
+Set-LocalAccountPassword -Username $Username -Password $NewPassword
 
 <% end %>
 
