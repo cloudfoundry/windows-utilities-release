@@ -1,4 +1,18 @@
-﻿$Enabled=[bool]$<%= p("enable_ssh.enabled") %>
+﻿$ErrorActionPreference = "Stop"
+trap { [Console]::Error.WriteLine("SSH setup failed: $_"); Exit 1 }
+
+function New-PrivatePolicyDirectory {
+    # These scripts are rendered into the administrator-managed BOSH job bin.
+    # Create with the protected DACL before writing any policy content.
+    $acl = New-Object System.Security.AccessControl.DirectorySecurity
+    $acl.SetSecurityDescriptorSddlForm('O:SYG:SYD:P(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)')
+    $path = Join-Path $PSScriptRoot ([System.IO.Path]::GetRandomFileName())
+    $directory = New-Object -TypeName System.IO.DirectoryInfo -ArgumentList $path
+    $directory.Create($acl)
+    return $path
+}
+
+$Enabled=[bool]$<%= p("enable_ssh.enabled") %>
 $FirewallRuleName = [string]"<%= p("enable_ssh.firewall_rule_name") %>"
 
 Start-Sleep 5
@@ -37,13 +51,15 @@ SeAssignPrimaryTokenPrivilege=*S-1-5-19,*S-1-5-20,*S-1-5-80-3847866527-469524349
 '@
 
 if (Test-Path $LGPOPath) {
-    $InfFilePath = "C:\Windows\Temp\enable-ssh.inf"
     "Found $LGPOPath. Modifying security policies to support ssh."
-    Out-File -FilePath $InfFilePath -Encoding unicode -InputObject $InfFileContents -Force
-    & $LGPOPath /s $InfFilePath
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "LGPO.exe exited with non-zero code: ${LASTEXITCODE }"
-        Exit $LASTEXITCODE
+    $policyDirectory = New-PrivatePolicyDirectory
+    try {
+        $InfFilePath = Join-Path $policyDirectory 'enable-ssh.inf'
+        Out-File -FilePath $InfFilePath -Encoding unicode -InputObject $InfFileContents
+        & $LGPOPath /s $InfFilePath
+        if ($LASTEXITCODE -ne 0) { throw "LGPO.exe import failed: $LASTEXITCODE" }
+    } finally {
+        Remove-Item -LiteralPath $policyDirectory -Recurse -Force -ErrorAction SilentlyContinue
     }
 } else {
     "Did not find $LGPOPath. Assuming existing security policies are sufficient to support ssh."

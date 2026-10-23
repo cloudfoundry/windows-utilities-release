@@ -1,5 +1,17 @@
 $ErrorActionPreference = "Stop";
 
+function New-PrivatePolicyDirectory {
+    # These scripts are rendered into the administrator-managed BOSH job bin.
+    # Create with the protected DACL before writing any policy content.
+    $acl = New-Object System.Security.AccessControl.DirectorySecurity
+    $acl.SetSecurityDescriptorSddlForm('O:SYG:SYD:P(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)')
+    $path = Join-Path $PSScriptRoot ([System.IO.Path]::GetRandomFileName())
+    $directory = New-Object -TypeName System.IO.DirectoryInfo -ArgumentList $path
+    $directory.Create($acl)
+    return $path
+}
+
+
 function Enable-FileSharing {
     Set-FileSharing 0
 }
@@ -10,7 +22,8 @@ function Disable-FileSharing {
 
 function Set-FileSharing {
     Param (
-        [string]$IsDisabled=$(Throw "IsDisabled is required")
+        [string]$IsDisabled=$(Throw "IsDisabled is required"),
+        [string]$LGPOPath="C:\Windows\LGPO.exe"
     )
 
     $TxtFileContents=@"
@@ -20,23 +33,20 @@ fDisableCdm
 DWORD:$IsDisabled
 "@
 
-    $TxtFilePath="C:\Windows\Temp\filesharing.txt"
-    $PolFilePath="C:\Windows\Temp\filesharing.pol"
-    $LGPOPath="C:\Windows\LGPO.exe"
 
     if (Test-Path $LGPOPath) {
         "Found $LGPOPath. Modifying security policies to modify support for rdp filesharing."
-        Out-File -FilePath $TxtFilePath -Encoding unicode -InputObject $TxtFileContents -Force
-
-        & $LGPOPath /r $TxtFilePath /w $PolFilePath /q
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "LGPO.exe exited with non-zero code: ${LASTEXITCODE}"
-            Exit $LASTEXITCODE
-        }
-        & $LGPOPath /m $PolFilePath /q
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "LGPO.exe exited with non-zero code: ${LASTEXITCODE}"
-            Exit $LASTEXITCODE
+        $policyDirectory = New-PrivatePolicyDirectory
+        try {
+            $TxtFilePath = Join-Path $policyDirectory 'filesharing.txt'
+            $PolFilePath = Join-Path $policyDirectory 'filesharing.pol'
+            Out-File -FilePath $TxtFilePath -Encoding unicode -InputObject $TxtFileContents
+            & $LGPOPath /r $TxtFilePath /w $PolFilePath /q
+            if ($LASTEXITCODE -ne 0) { throw "LGPO.exe conversion failed: $LASTEXITCODE" }
+            & $LGPOPath /m $PolFilePath /q
+            if ($LASTEXITCODE -ne 0) { throw "LGPO.exe import failed: $LASTEXITCODE" }
+        } finally {
+            Remove-Item -LiteralPath $policyDirectory -Recurse -Force -ErrorAction SilentlyContinue
         }
     } else {
         "Did not find $LGPOPath. Assuming existing security policies are sufficient to modify support for rdp filesharing."

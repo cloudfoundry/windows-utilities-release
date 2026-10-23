@@ -29,7 +29,6 @@ if (-not $Enabled) {
 
 # Enable RDP
 
-$InfFilePath="C:\Windows\Temp\enable-rdp.inf"
 $LGPOPath="C:\Windows\LGPO.exe"
 
 $InfFileContents=@'
@@ -47,11 +46,14 @@ SeDenyRemoteInteractiveLogonRight=*S-1-5-32-546
 
 if (Test-Path $LGPOPath) {
     "Found $LGPOPath. Modifying security policies to support rdp."
-    Out-File -FilePath $InfFilePath -Encoding unicode -InputObject $InfFileContents -Force
-    & $LGPOPath /s $InfFilePath
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "LGPO.exe exited with non-zero code: ${LASTEXITCODE}"
-        Exit $LASTEXITCODE
+    $policyDirectory = New-PrivatePolicyDirectory
+    try {
+        $InfFilePath = Join-Path $policyDirectory 'enable-rdp.inf'
+        Out-File -FilePath $InfFilePath -Encoding unicode -InputObject $InfFileContents
+        & $LGPOPath /s $InfFilePath
+        if ($LASTEXITCODE -ne 0) { throw "LGPO.exe import failed: $LASTEXITCODE" }
+    } finally {
+        Remove-Item -LiteralPath $policyDirectory -Recurse -Force -ErrorAction SilentlyContinue
     }
 } else {
     "Did not find $LGPOPath. Assuming existing security policies are sufficient to support rdp."
