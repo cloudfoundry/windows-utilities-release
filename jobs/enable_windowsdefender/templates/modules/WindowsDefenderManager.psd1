@@ -14,7 +14,7 @@
     PrivateData = @{
         PSData = @{
             Tags = @('CloudFoundry')
-            LicenseUri = 'https://github.com/cloudfoundry-incubator/windows-utilities-release/blob/master/LICENSE'
+            LicenseUri = 'https://github.com/cloudfoundry-incubator/windows-utilities-release/blob/main/LICENSE'
             ProjectUri = 'https://github.com/cloudfoundry-incubator/windows-utilities-release'
         }
     }
