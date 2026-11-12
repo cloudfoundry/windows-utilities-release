@@ -11,6 +11,11 @@ If (-Not $KmsEnabled) {
   Exit 0
 }
 
+if (($DesiredPort -lt 1) -or ($DesiredPort -gt 65535)) {
+  Write-Error "set_kms_host.port must be between 1 and 65535, got: $DesiredPort"
+  Exit 1
+}
+
 $InboundRule="Open inbound $DesiredPort for KMS Server"
 if ((Get-NetFirewallRule | where { $_.DisplayName -eq $InboundRule }) -ne $null) {
     "Deleting inbound firewall rule for KMS"
@@ -29,6 +34,12 @@ if ((Get-NetFirewallRule | where { $_.DisplayName -eq $OutboundRule }) -ne $null
 
 "Creating outbound firewall rule for KMS"
 netsh advfirewall firewall add rule name=$OutboundRule dir=out action=allow protocol=TCP remoteport=$DesiredPort
+
+# slmgr.vbs /skms ignores an empty host, so keep the host the IaaS set.
+if ([string]::IsNullOrWhiteSpace($DesiredHost)) {
+  "set_kms_host.host is empty, leaving the KMS host unchanged."
+  Exit 0
+}
 
 # slmgr.vbs /skms fails with 0x80041008 on stemcells whose sppwmi.dll is
 # 10.0.17763.9479. It writes these same two values, and activation reads them.
